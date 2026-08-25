@@ -1,35 +1,82 @@
 import crypto from 'node:crypto';
 import { readJsonFile, updateJsonFile } from '../_lib/github.js';
-import { encryptPyramids, readSecurePyramids, writeSecurePyramids, isValidPyramidRows, letters, tokenize } from '../_lib/pyramids.js';
+import { encryptPyramids, readSecurePyramids, writeSecurePyramids, validateBranch, tokenize, letters } from '../_lib/pyramids.js';
 
 function cookie(req) { const raw=req.headers.cookie||''; const part=raw.split(';').map(v=>v.trim()).find(v=>v.startsWith('enygma_admin=')); return part ? decodeURIComponent(part.slice('enygma_admin='.length)) : ''; }
 function isAdmin(req) { const secret=process.env.ADMIN_PASSWORD||''; if(!secret)return false; const expected=crypto.createHash('sha256').update(`enygma:${secret}`).digest('hex'); const supplied=cookie(req); const a=Buffer.from(supplied),b=Buffer.from(expected); return a.length===b.length&&crypto.timingSafeEqual(a,b); }
-function normalizeRows(rows) { if(!Array.isArray(rows))return []; return rows.map((row,index)=>({clue:String(row?.clue||'').trim(),answer:letters(row?.answer||''),length:index+1})); }
-function validate(title,date,rows) { if(!title)return 'Title is required.'; if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return 'Date must be YYYY-MM-DD.'; if(!rows.length)return 'Add at least one row.'; if(rows.some(row=>!row.clue||tokenize(row.answer).length!==row.length))return 'Every row needs a clue and an answer with the correct Serbian-letter length.'; if(!isValidPyramidRows(rows))return "Each row must contain the previous row's letters plus exactly one new letter."; return null; }
+function normalizeBranch(firstAnswer, rows) { return { firstAnswer: letters(firstAnswer), rows: Array.isArray(rows) ? rows.map(row=>({clue:String(row?.clue||'').trim(), answer:letters(row?.answer||''), length:tokenize(row?.answer||'').length})) : [] }; }
+function validate(title,date,firstClue,firstAnswers,branches,rowCount) {
+  if(!title)return 'Title is required.';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return 'Date must be YYYY-MM-DD.';
+  if(!firstClue)return 'The first-row clue is required.';
+  if(!Array.isArray(firstAnswers)||firstAnswers.length!==2)return 'Enter exactly two possible first-row answers.';
+  if(new Set(firstAnswers.map(v=>letters(v))).size!==2)return 'The two first-row answers must be different.';
+  if(firstAnswers.some(v=>tokenize(v).length!==1))return 'Each first-row answer must contain exactly one Serbian letter.';
+  if(!Number.isInteger(rowCount)||rowCount<1||rowCount>30)return 'The number of rows must be between 1 and 30.';
+  for(let i=0;i<2;i+=1){
+    const branch=branches[i];
+    if(!branch)return `Branch ${i+1} is missing.`;
+    if(branch.rows.length!==rowCount-1)return `Branch ${i+1} must contain ${rowCount-1} subsequent rows.`;
+    if(branch.rows.some(row=>!row.clue||!row.answer))return `Every row in branch ${i+1} needs a clue and an answer.`;
+    const error=validateBranch(firstAnswers[i],branch.rows);
+    if(error)return `Branch ${i+1}: ${error}`;
+  }
+  return null;
+}
+
 async function publicData(){ return readJsonFile('data/entries.json',{connections:[],crosswords:[],pyramids:[]}); }
+
 export default async function handler(req,res){
   if(!isAdmin(req))return res.status(403).json({error:'Forbidden'});
   if(!process.env.GITHUB_TOKEN)return res.status(503).json({error:'GitHub token is not configured.'});
   try{
-    if(req.method==='GET'){
-      const current=await publicData(),secure=await readSecurePyramids(),secureMap=secure.data||{};
-      const entries=(current.data.pyramids||[]).map(entry=>({...entry,rows:(secureMap[String(entry.id)]?.rows||[]).map(row=>({clue:String(row.clue||''),answer:String(row.answer||''),length:Number(row.length||tokenize(row.answer||'').length)}))}));
-      return res.status(200).json({entries});
-    }
-    const body=req.body||{},id=String(body.id||''),title=String(body.title||'').trim(),date=String(body.date||''),rows=normalizeRows(body.rows),error=validate(title,date,rows);
-    if(error)return res.status(400).json({error});
-    const current=await publicData(),secure=await readSecurePyramids(),data=current.data||{connections:[],crosswords:[],pyramids:[]};
+    const current=await publicData(),secure=await readSecurePyramids();
+    const data=current.data||{connections:[],crosswords:[],pyramids:[]};
     if(!Array.isArray(data.pyramids))data.pyramids=[];
     const secureData=secure.data||{};
-    if(req.method==='POST'){
-      const newId=`pyramids-${Date.now()}`; data.pyramids.push({id:newId,title,date,content:'',rows:rows.map(row=>({clue:row.clue,length:row.length}))}); secureData[newId]={rows};
-      await updateJsonFile('data/entries.json',{connections:[],crosswords:[],pyramids:[]},()=>data,`Add pyramids entry: ${title}`); await writeSecurePyramids({version:1,ciphertext:encryptPyramids(secureData)},secure.sha,`Secure answers: add Pyramid ${newId}`); return res.status(201).json({ok:true,id:newId});
+
+    if(req.method==='GET'){
+      const entries=data.pyramids.map(entry=>{const privatePuzzle=secureData[String(entry.id)];return {...entry,firstClue:privatePuzzle?.firstClue||'',firstAnswers:privatePuzzle?.firstAnswers||[],branches:privatePuzzle?.branches||{},rowCount:Number(entry.rowCount||1)};});
+      return res.status(200).json({entries});
     }
+
+    const body=req.body||{};
+    const title=String(body.title||'').trim(),date=String(body.date||''),firstClue=String(body.firstClue||'').trim();
+    const firstAnswers=Array.isArray(body.firstAnswers)?body.firstAnswers.map(letters):[];
+    const rowCount=Math.max(1,Math.min(30,Number(body.rowCount)||0));
+    const rawBranches=Array.isArray(body.branches)?body.branches:[
+      {rows:body.branchA?.rows||[]},
+      {rows:body.branchB?.rows||[]}
+    ];
+    const branches=firstAnswers.map((answer,index)=>normalizeBranch(answer,rawBranches[index]?.rows||[]));
+    const error=validate(title,date,firstClue,firstAnswers,branches,rowCount);
+    if(error)return res.status(400).json({error});
+
+    if(req.method==='POST'){
+      const newId=`pyramids-${Date.now()}`;
+      data.pyramids.push({id:newId,title,date,content:'',rowCount,firstClue,length:1});
+      secureData[newId]={rowCount,firstClue,firstAnswers,branches:Object.fromEntries(branches.map(branch=>[branch.firstAnswer,{rows:branch.rows}]))};
+      await updateJsonFile('data/entries.json',{connections:[],crosswords:[],pyramids:[]},()=>data,`Add pyramids entry: ${title}`);
+      await writeSecurePyramids({version:1,ciphertext:encryptPyramids(secureData)},secure.sha,`Secure answers: add Pyramid ${newId}`);
+      return res.status(201).json({ok:true,id:newId});
+    }
+
+    const id=String(body.id||'');
     if(!id)return res.status(400).json({error:'Puzzle ID is required.'});
     const index=data.pyramids.findIndex(entry=>String(entry.id)===id); if(index<0)return res.status(404).json({error:'Puzzle not found.'});
-    if(req.method==='DELETE'){data.pyramids.splice(index,1);delete secureData[id];await updateJsonFile('data/entries.json',{connections:[],crosswords:[],pyramids:[]},()=>data,`Delete pyramids entry: ${id}`);await writeSecurePyramids({version:1,ciphertext:encryptPyramids(secureData)},secure.sha,`Secure answers: delete Pyramid ${id}`);return res.status(200).json({ok:true});}
+
+    if(req.method==='DELETE'){
+      data.pyramids.splice(index,1); delete secureData[id];
+      await updateJsonFile('data/entries.json',{connections:[],crosswords:[],pyramids:[]},()=>data,`Delete pyramids entry: ${id}`);
+      await writeSecurePyramids({version:1,ciphertext:encryptPyramids(secureData)},secure.sha,`Secure answers: delete Pyramid ${id}`);
+      return res.status(200).json({ok:true});
+    }
     if(req.method!=='PUT'){res.setHeader('Allow','GET, POST, PUT, DELETE');return res.status(405).json({error:'Method not allowed'});}
-    data.pyramids[index]={...data.pyramids[index],title,date,content:'',rows:rows.map(row=>({clue:row.clue,length:row.length}))}; secureData[id]={rows};
-    await updateJsonFile('data/entries.json',{connections:[],crosswords:[],pyramids:[]},()=>data,`Edit pyramids entry: ${id}`); await writeSecurePyramids({version:1,ciphertext:encryptPyramids(secureData)},secure.sha,`Secure answers: edit Pyramid ${id}`); return res.status(200).json({ok:true});
+
+    data.pyramids[index]={...data.pyramids[index],title,date,rowCount,firstClue,length:1,content:''};
+    secureData[id]={rowCount,firstClue,firstAnswers,branches:Object.fromEntries(branches.map(branch=>[branch.firstAnswer,{rows:branch.rows}]))};
+    await updateJsonFile('data/entries.json',{connections:[],crosswords:[],pyramids:[]},()=>data,`Edit pyramids entry: ${id}`);
+    await writeSecurePyramids({version:1,ciphertext:encryptPyramids(secureData)},secure.sha,`Secure answers: edit Pyramid ${id}`);
+    return res.status(200).json({ok:true});
   }catch(error){console.error(error);return res.status(500).json({error:'Could not manage Pyramid.'});}
 }
