@@ -23,6 +23,18 @@
       "completed": false,
       "score": 400,
       "createdAt": "2026-08-25T03:26:00.933Z"
+    },
+    {
+      "id": "beelzebub-connections-1787627075523",
+      "username": "beelzebub",
+      "type": "connections",
+      "puzzleId": "connections-1787627075523",
+      "puzzleDate": "2026-08-25",
+      "solveTimeSeconds": 139,
+      "groupsSolved": 1,
+      "completed": false,
+      "score": 400,
+      "createdAt": "2026-08-25T03:27:48.729Z"
     }
   ]
 }
