@@ -1,6 +1,8 @@
 import { readJsonFile } from '../_lib/github.js';
 import { getConnectionsGame, setConnectionsGame } from '../_lib/auth.js';
 
+const POINTS = { yellow: 100, blue: 200, green: 400, purple: 1000 };
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -29,10 +31,12 @@ export default async function handler(req, res) {
 
     const words = groups.flatMap(group => group.words);
     const solvedGroups = state.gameOver ? groups : groups.filter(group => state.solvedColors.includes(group.color));
+    const completed = state.gameOver && state.solvedColors.length === 4 && Number(state.mistakes || 0) < 4;
+    const score = state.solvedColors.reduce((sum, color) => sum + (POINTS[color] || 0), 0) + (completed ? 1000 : 0);
     const archive = sorted.map(entry => ({ id: String(entry.id), title: String(entry.title || entry.date), date: String(entry.date) }));
 
     return res.status(200).json({
-      puzzle: { id: String(puzzle.id), title: String(puzzle.title || puzzle.date), date: String(puzzle.date), words, solvedGroups, gameOver: Boolean(state.gameOver), mistakes: Number(state.mistakes || 0) },
+      puzzle: { id: String(puzzle.id), title: String(puzzle.title || puzzle.date), date: String(puzzle.date), words, solvedGroups, gameOver: Boolean(state.gameOver), mistakes: Number(state.mistakes || 0), completed, score },
       archive
     });
   } catch (error) {
