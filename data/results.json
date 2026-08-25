@@ -11,6 +11,18 @@
       "completed": true,
       "score": 2700,
       "createdAt": "2026-08-25T03:18:27.976Z"
+    },
+    {
+      "id": "marko-connections-1787627075523",
+      "username": "marko",
+      "type": "connections",
+      "puzzleId": "connections-1787627075523",
+      "puzzleDate": "2026-08-25",
+      "solveTimeSeconds": 89,
+      "groupsSolved": 1,
+      "completed": false,
+      "score": 400,
+      "createdAt": "2026-08-25T03:26:00.933Z"
     }
   ]
 }
