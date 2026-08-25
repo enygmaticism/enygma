@@ -1,3 +1,16 @@
 {
-  "results": []
+  "results": [
+    {
+      "id": "golubovic_testing-connections-1787627075523",
+      "username": "golubovic_testing",
+      "type": "connections",
+      "puzzleId": "connections-1787627075523",
+      "puzzleDate": "2026-08-25",
+      "solveTimeSeconds": 26,
+      "groupsSolved": 4,
+      "completed": true,
+      "score": 2700,
+      "createdAt": "2026-08-25T03:18:27.976Z"
+    }
+  ]
 }
