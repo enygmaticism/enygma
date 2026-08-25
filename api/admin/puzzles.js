@@ -1,18 +1,29 @@
-import { getSessionUser } from '../_lib/auth.js';
+import crypto from 'node:crypto';
 import { readJsonFile, updateJsonFile } from '../_lib/github.js';
 
 const TYPES = ['connections', 'crosswords', 'pyramids'];
+const ADMIN_COOKIE = 'enygma_admin';
 
-function requireAdmin(req) {
-  const session = getSessionUser(req);
-  return session?.kind === 'admin' ? session : null;
+function getCookie(req, name) {
+  const raw = req.headers.cookie || '';
+  return raw.split(';').map(value => value.trim()).find(value => value.startsWith(`${name}=`))?.slice(name.length + 1) || '';
+}
+
+function isAdmin(req) {
+  const secret = process.env.ADMIN_PASSWORD;
+  if (!secret) return false;
+  const supplied = decodeURIComponent(getCookie(req, ADMIN_COOKIE));
+  const expected = crypto.createHash('sha256').update(`enygma:${secret}`).digest('hex');
+  const a = Buffer.from(supplied);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 function validateEntry(type, entry) {
   if (!TYPES.includes(type)) return 'Invalid category.';
   if (!entry || typeof entry !== 'object') return 'Invalid entry.';
   if (!String(entry.title || '').trim()) return 'Title is required.';
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(entry.date || ''))) return 'Date must be YYYY-MM-DD.';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(entry.date || ''))) return 'Date must be YYYY-MM-DD.';
   if (type === 'connections') {
     if (!Array.isArray(entry.groups) || entry.groups.length !== 4) return 'Connections must have four groups.';
     const words = entry.groups.flatMap(group => Array.isArray(group.words) ? group.words.map(String).map(v => v.trim()) : []);
@@ -23,8 +34,7 @@ function validateEntry(type, entry) {
 }
 
 export default async function handler(req, res) {
-  if (!requireAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
-
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
   try {
     const current = await readJsonFile('data/entries.json', { connections: [], crosswords: [], pyramids: [] });
     const data = current.data || { connections: [], crosswords: [], pyramids: [] };
@@ -33,8 +43,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const type = String(req.query?.type || 'all');
       if (type !== 'all' && !TYPES.includes(type)) return res.status(400).json({ error: 'Invalid category.' });
-      if (type === 'all') return res.status(200).json({ entries: Object.fromEntries(TYPES.map(key => [key, data[key]])) });
-      return res.status(200).json({ entries: data[type] });
+      return res.status(200).json(type === 'all' ? { entries: Object.fromEntries(TYPES.map(key => [key, data[key]])) } : { entries: data[type] });
     }
 
     if (req.method !== 'PUT' && req.method !== 'DELETE') {
@@ -42,8 +51,8 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const type = String(req.body?.type || req.query?.type || '');
-    const id = String(req.body?.id || req.query?.id || '');
+    const type = String(req.body?.type || '');
+    const id = String(req.body?.id || '');
     if (!TYPES.includes(type) || !id) return res.status(400).json({ error: 'Category and puzzle ID are required.' });
     const index = data[type].findIndex(entry => String(entry.id) === id);
     if (index < 0) return res.status(404).json({ error: 'Puzzle not found.' });
@@ -54,7 +63,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    const updated = { ...data[type][index], ...(req.body.entry || {}) , id };
+    const updated = { ...data[type][index], ...(req.body.entry || {}), id };
     const error = validateEntry(type, updated);
     if (error) return res.status(400).json({ error });
     data[type][index] = updated;
