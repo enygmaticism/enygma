@@ -4,8 +4,8 @@ const COOKIE_NAME = 'enygma_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 function secretKey() {
-  const secret = process.env.USER_DATA_KEY;
-  if (!secret) throw new Error('USER_DATA_KEY is not configured.');
+  const secret = process.env.USER_DATA_KEY || `${process.env.ADMIN_PASSWORD || ''}\u0000${process.env.GITHUB_TOKEN || ''}`;
+  if (!secret || secret === '\u0000') throw new Error('Account encryption secret is not configured.');
   return crypto.createHash('sha256').update(secret).digest();
 }
 
@@ -68,10 +68,11 @@ export function clearSession(res) {
 export async function readUsers(readJsonFile) {
   const { data } = await readJsonFile('data/users.secure.json', { version: 1, ciphertext: '' });
   if (!data.ciphertext) return { users: {}, sha: null };
-  const decipher = crypto.createDecipheriv('aes-256-gcm', secretKey(), Buffer.from(data.ciphertext, 'base64').subarray(0, 12));
   const payload = Buffer.from(data.ciphertext, 'base64');
+  const iv = payload.subarray(0, 12);
   const tag = payload.subarray(payload.length - 16);
   const ciphertext = payload.subarray(12, payload.length - 16);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', secretKey(), iv);
   decipher.setAuthTag(tag);
   const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
   return { users: JSON.parse(plaintext), sha: null };
