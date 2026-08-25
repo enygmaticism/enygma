@@ -11,7 +11,7 @@ function secretKey() {
 }
 
 function hashPassword(password, salt) {
-  return crypto.scryptSync(password, salt, 64, { N: 32768, r: 8, p: 1 }).toString('hex');
+  return crypto.scryptSync(password, salt, 64, { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }).toString('hex');
 }
 
 export function createPasswordRecord(password) {
