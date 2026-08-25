@@ -47,6 +47,18 @@
       "completed": false,
       "score": 0,
       "createdAt": "2026-08-25T03:28:16.959Z"
+    },
+    {
+      "id": "golubovic_testing-connections-1787627009101",
+      "username": "golubovic_testing",
+      "type": "connections",
+      "puzzleId": "connections-1787627009101",
+      "puzzleDate": "2026-08-25",
+      "solveTimeSeconds": 19,
+      "groupsSolved": 0,
+      "completed": false,
+      "score": 0,
+      "createdAt": "2026-08-25T03:32:32.697Z"
     }
   ]
 }
