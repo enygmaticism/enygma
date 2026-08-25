@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enygma — Pyramids</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/pyramids.css" />
+</head>
+<body class="pyramid-page">
+  <main class="pyramid-shell">
+    <header class="pyramid-header">
+      <a class="pyramid-brand" href="index.html">enygma</a>
+      <nav class="pyramid-header-nav"><a href="rankings.html">Rankings</a><a href="profile.html">Profile</a><a href="index.html">All games</a></nav>
+    </header>
+
+    <section class="pyramid-intro">
+      <h1>Pyramids</h1>
+      <p>Each row is a clue for one across answer. The next row contains exactly the same letters as the row above, plus one new letter.</p>
+    </section>
+
+    <section class="pyramid-rules">
+      <strong>How to play</strong>
+      <p>Start with the one-letter answer at the top. Every row below gets one letter longer. The letters from the previous row must all appear in the next answer, with exactly one additional letter added. Letter order may change. There is no Down crossword — every clue is Across.</p>
+    </section>
+
+    <section id="pyramid-app" aria-live="polite"><div class="connections-loading">Loading puzzle…</div></section>
+
+    <section class="pyramid-archive">
+      <div class="connections-section-label">Archive</div>
+      <div id="pyramid-archive-list"></div>
+    </section>
+  </main>
+  <script src="assets/pyramids.js"></script>
+</body>
+</html>
