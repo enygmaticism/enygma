@@ -16,7 +16,7 @@
     <section class="category-heading">
       <p class="eyebrow">Private area</p>
       <h1>Admin</h1>
-      <p>Enter your admin password to manage puzzles.</p>
+      <p>Manage the puzzle archive and create new entries.</p>
     </section>
 
     <section id="login-panel" class="admin-panel">
@@ -29,37 +29,76 @@
       </form>
     </section>
 
-    <section id="editor-panel" class="admin-panel hidden">
-      <div class="section-label">New entry</div>
-      <h2>Add a puzzle</h2>
-      <form id="entry-form" class="stack-form">
-        <label>Category
-          <select id="entry-type" required>
+    <section id="editor-panel" class="hidden">
+      <section class="admin-panel">
+        <div class="section-heading">
+          <div>
+            <div class="section-label">New entry</div>
+            <h2>Add a puzzle</h2>
+          </div>
+        </div>
+        <form id="entry-form" class="stack-form">
+          <label>Category
+            <select id="entry-type" required>
+              <option value="connections">Connections</option>
+              <option value="crosswords">Crosswords</option>
+              <option value="pyramids">Pyramids</option>
+            </select>
+          </label>
+          <label>Title<input id="entry-title" type="text" placeholder="e.g. Monday, August 25" required /></label>
+          <label>Date<input id="entry-date" type="date" required /></label>
+          <div id="standard-content-fields">
+            <label>Notes / content<textarea id="entry-content" rows="8" placeholder="Game-specific content will go here."></textarea></label>
+          </div>
+          <div id="connections-fields" class="hidden connections-admin-editor">
+            <div class="connections-admin-heading">
+              <div class="section-label">Connections puzzle</div>
+              <p>Four groups, four words each. Group order sets yellow, green, blue, purple difficulty.</p>
+            </div>
+            <div id="connections-groups"></div>
+          </div>
+          <button type="submit">Add entry</button>
+          <p id="entry-message" class="form-message" role="status"></p>
+        </form>
+      </section>
+
+      <section class="admin-panel">
+        <div class="section-label">Archive manager</div>
+        <h2>Edit puzzles</h2>
+        <div class="archive-editor-toolbar">
+          <select id="manage-type" aria-label="Archive category">
             <option value="connections">Connections</option>
             <option value="crosswords">Crosswords</option>
             <option value="pyramids">Pyramids</option>
           </select>
-        </label>
-        <label>Title<input id="entry-title" type="text" placeholder="e.g. Monday, August 25" required /></label>
-        <label>Date<input id="entry-date" type="date" required /></label>
-
-        <div id="standard-content-fields">
-          <label>Notes / content<textarea id="entry-content" rows="8" placeholder="Game-specific content will go here."></textarea></label>
+          <button type="button" class="secondary" id="refresh-puzzles">Refresh</button>
         </div>
+        <div id="puzzle-list" class="puzzle-manager-list"></div>
+        <p id="manage-message" class="form-message" role="status"></p>
+      </section>
 
-        <div id="connections-fields" class="hidden connections-admin-editor">
-          <div class="connections-admin-heading">
-            <div class="section-label">Connections puzzle</div>
-            <p>Enter four groups. Each group must contain four words. The group order sets the NYT-style difficulty colors: yellow, green, blue, purple.</p>
+      <section id="edit-panel" class="admin-panel hidden">
+        <div class="section-label">Edit entry</div>
+        <h2 id="edit-heading">Edit puzzle</h2>
+        <form id="edit-form" class="stack-form">
+          <input id="edit-id" type="hidden" />
+          <label>Title<input id="edit-title" type="text" required /></label>
+          <label>Date<input id="edit-date" type="date" required /></label>
+          <div id="edit-standard-fields">
+            <label>Notes / content<textarea id="edit-content" rows="8"></textarea></label>
           </div>
-          <div id="connections-groups"></div>
-        </div>
+          <div id="edit-connections-fields" class="hidden connections-admin-editor">
+            <div id="edit-connections-groups"></div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit">Save changes</button>
+            <button type="button" class="secondary" id="cancel-edit">Cancel</button>
+          </div>
+          <p id="edit-message" class="form-message" role="status"></p>
+        </form>
+      </section>
 
-        <button type="submit">Add entry</button>
-        <button type="button" class="secondary" id="logout-button">Log out</button>
-        <p id="entry-message" class="form-message" role="status"></p>
-      </form>
-      <p class="admin-note">Connections puzzles are stored with four named groups and four words per group in <code>data/entries.json</code>.</p>
+      <div class="admin-actions-row"><button type="button" class="secondary" id="logout-button">Log out</button></div>
     </section>
 
     <footer class="site-footer">enygma</footer>
