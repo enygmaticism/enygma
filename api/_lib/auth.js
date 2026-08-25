@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
 const COOKIE_NAME = 'enygma_session';
+const GAME_COOKIE_NAME = 'enygma_connections_game';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 function secretKey() {
@@ -40,29 +41,44 @@ function verify(token) {
     const b = Buffer.from(expected);
     if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
     const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
-    if (!payload.username || !payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
+    if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
     return payload;
   } catch {
     return null;
   }
 }
 
-function getCookie(req) {
+function getCookie(req, name) {
   const raw = req.headers.cookie || '';
-  return raw.split(';').map(value => value.trim()).find(value => value.startsWith(`${COOKIE_NAME}=`))?.slice(COOKIE_NAME.length + 1) || '';
+  return raw.split(';').map(value => value.trim()).find(value => value.startsWith(`${name}=`))?.slice(name.length + 1) || '';
 }
 
 export function getSessionUser(req) {
-  return verify(decodeURIComponent(getCookie(req)));
+  const session = verify(decodeURIComponent(getCookie(req, COOKIE_NAME)));
+  return session?.username ? session : null;
 }
 
 export function setSession(res, username) {
-  const token = sign({ username, exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS });
+  const token = sign({ kind: 'session', username, exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS });
   res.setHeader('Set-Cookie', `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`);
 }
 
 export function clearSession(res) {
   res.setHeader('Set-Cookie', `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
+}
+
+export function getConnectionsGame(req) {
+  const state = verify(decodeURIComponent(getCookie(req, GAME_COOKIE_NAME)));
+  return state?.kind === 'connections' ? state : null;
+}
+
+export function setConnectionsGame(res, state) {
+  const token = sign({ kind: 'connections', ...state, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 12 });
+  res.setHeader('Set-Cookie', `${GAME_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=43200`);
+}
+
+export function clearConnectionsGame(res) {
+  res.setHeader('Set-Cookie', `${GAME_COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
 }
 
 export async function readUsers(readJsonFile) {
