@@ -104,7 +104,9 @@ code { font-family:'DM Mono',monospace; }
 .connections-shell { width:min(560px, calc(100% - 32px)); margin:0 auto; padding-bottom:70px; }
 .connections-header { display:flex; justify-content:space-between; align-items:center; padding:26px 0 18px; border-bottom:0; }
 .connections-brand { font-size:17px; font-weight:700; letter-spacing:-.03em; }
-.connections-back { font-size:13px; color:#5f5f5f; }
+.connections-nav { display:flex; align-items:center; gap:14px; font-size:12px; }
+.connections-nav a:hover { text-decoration:underline; }
+.connections-back { color:#5f5f5f; }
 .connections-intro { text-align:center; padding:28px 0 22px; }
 .connections-intro h1 { margin:0 0 8px; font-size:32px; line-height:1; letter-spacing:-.04em; font-weight:700; }
 .connections-intro p { margin:0; font-size:15px; color:#5f5f5f; }
@@ -144,4 +146,4 @@ code { font-family:'DM Mono',monospace; }
 .connections-group-editor.blue { border-top:5px solid var(--nyt-blue); }
 .connections-group-editor.purple { border-top:5px solid var(--nyt-purple); }
 .connection-word-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:10px; }
-@media (max-width:760px) { .site-shell,.home-shell { width:min(100% - 28px,1320px); } .hero { padding:65px 0 38px; } .category-grid,.home-category-grid { grid-template-columns:1fr; } .category-card { min-height:190px; } .home-category-card { min-height:28vh; } .category-initial { font-size:150px; } .home-category-title { left:20px; bottom:18px; font-size:24px; } .archive-item { flex-direction:column; gap:6px; } .connection-tile { min-height:74px; font-size:12px; } .connections-shell { width:min(100% - 20px,560px); } .record-grid { grid-template-columns:1fr; } .result-row { grid-template-columns:1fr 1fr; } .result-row strong { text-align:left; } .ranking-table-head,.ranking-row { grid-template-columns:50px 1fr 60px 90px; gap:8px; } .home-nav,.account-nav { gap:10px; font-size:11px; } }
+@media (max-width:760px) { .site-shell,.home-shell { width:min(100% - 28px,1320px); } .hero { padding:65px 0 38px; } .category-grid,.home-category-grid { grid-template-columns:1fr; } .category-card { min-height:190px; } .home-category-card { min-height:28vh; } .category-initial { font-size:150px; } .home-category-title { left:20px; bottom:18px; font-size:24px; } .archive-item { flex-direction:column; gap:6px; } .connection-tile { min-height:74px; font-size:12px; } .connections-shell { width:min(100% - 20px,560px); } .record-grid { grid-template-columns:1fr; } .result-row { grid-template-columns:1fr 1fr; } .result-row strong { text-align:left; } .ranking-table-head,.ranking-row { grid-template-columns:50px 1fr 60px 90px; gap:8px; } .home-nav,.account-nav { gap:10px; font-size:11px; } .connections-nav { gap:9px; font-size:11px; } }
