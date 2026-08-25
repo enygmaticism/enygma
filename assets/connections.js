@@ -55,12 +55,14 @@ async function loadAccount() {
 }
 
 function currentScore() {
-  return [...solvedColors].reduce((sum, color) => sum + POINTS[color], 0) + (solvedColors.size === 4 ? 1000 : 0);
+  const groupPoints = [...solvedColors].reduce((sum, color) => sum + POINTS[color], 0);
+  return groupPoints + (!gameOver || solvedColors.size === 4 && mistakes < 4 ? 1000 : 0);
 }
 
 async function saveResult() {
   if (resultSaved || !puzzle) return;
   resultSaved = true;
+  const completed = solvedColors.size === 4 && mistakes < 4;
   try {
     const response = await fetch('api/results', {
       method: 'POST',
@@ -72,7 +74,7 @@ async function saveResult() {
         puzzleDate: puzzle.date,
         solveTimeSeconds: Math.round((Date.now() - startedAt) / 1000),
         solvedColors: [...solvedColors],
-        completed: solvedColors.size === 4
+        completed
       })
     });
     if (response.status === 401) {
@@ -96,7 +98,8 @@ function render() {
   }
 
   const remaining = words.filter(word => !solvedWords.has(word.id));
-  const solvedGroups = puzzle.groups.filter(group => solvedColors.has(group.color));
+  const solvedGroups = gameOver ? puzzle.groups : puzzle.groups.filter(group => solvedColors.has(group.color));
+  const completed = solvedColors.size === 4 && mistakes < 4;
 
   app.innerHTML = `
     <div class="connections-game">
@@ -121,7 +124,8 @@ function render() {
           <button id="deselect-btn" class="connections-secondary">Deselect all</button>
           <button id="submit-btn" class="connections-primary" ${selected.length !== 4 ? 'disabled' : ''}>Submit</button>
         </div>` : ''}
-      <div id="connections-message" class="connections-message">${gameOver ? (solvedColors.size === 4 ? `Great work! +${currentScore().toLocaleString()} points` : `Game over — ${currentScore().toLocaleString()} points`) : ''}</div>
+      <div id="connections-message" class="connections-message">${gameOver ? (completed ? `Great work! +${currentScore().toLocaleString()} points` : `Game over — ${currentScore().toLocaleString()} points`) : ''}</div>
+      ${gameOver && accountUsername ? '<div class="save-result-note">Your result is saved to your profile.</div>' : ''}
       ${gameOver && !accountUsername ? '<a class="save-result-prompt" href="login.html">Log in to save your result and appear on the rankings.</a>' : ''}
       ${accountUsername && !gameOver ? '<div class="account-hint">Your result will be saved to your profile when the puzzle ends.</div>' : ''}
     </div>`;
@@ -181,21 +185,12 @@ async function submitSelection() {
   const message = document.getElementById('connections-message');
   if (message) message.textContent = oneAway ? 'One away...' : 'Not quite.';
 
-  if (mistakes >= 4) {
-    puzzle.groups.forEach(group => {
-      solvedColors.add(group.color);
-      group.words.forEach(text => {
-        const tile = words.find(word => word.text === text);
-        if (tile) solvedWords.add(tile.id);
-      });
-    });
-    await finishGame();
-  }
+  if (mistakes >= 4) await finishGame();
 }
 
 async function init() {
   try {
-    [accountUsername] = await Promise.all([loadAccount()]);
+    accountUsername = await loadAccount();
     const data = await loadEntries();
     const entries = (data.connections || [])
       .map(normalizedEntry)
