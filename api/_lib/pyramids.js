@@ -37,7 +37,8 @@ export async function readSecurePyramids() {
   if (response.status === 404) return { data: {}, sha: null };
   if (!response.ok) throw new Error(`GitHub secure pyramid read failed: ${response.status}`);
   const body = await response.json();
-  return { data: JSON.parse(Buffer.from(body.content, 'base64').toString('utf8')), sha: body.sha };
+  const wrapper = JSON.parse(Buffer.from(body.content, 'base64').toString('utf8'));
+  return { data: decryptPyramids(wrapper.ciphertext), sha: body.sha };
 }
 
 export async function writeSecurePyramids(data, sha, message) {
