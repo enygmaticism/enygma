@@ -1,4 +1,5 @@
 const COLORS = ['yellow', 'green', 'blue', 'purple'];
+const POINTS = { yellow: 100, blue: 200, green: 400, purple: 1000 };
 
 let puzzle = null;
 let words = [];
@@ -7,6 +8,9 @@ let mistakes = 0;
 let solvedColors = new Set();
 let solvedWords = new Set();
 let gameOver = false;
+let startedAt = 0;
+let resultSaved = false;
+let accountUsername = null;
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
@@ -14,7 +18,7 @@ function escapeHtml(value) {
 
 function shuffle(items) {
   const a = [...items];
-  for (let i = a.length - 1; i > 0; i--) {
+  for (let i = a.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
@@ -37,6 +41,51 @@ async function loadEntries() {
   const response = await fetch(`data/entries.json?t=${Date.now()}`, { cache: 'no-store' });
   if (!response.ok) throw new Error('Could not load entries');
   return response.json();
+}
+
+async function loadAccount() {
+  try {
+    const response = await fetch('api/auth/me', { cache: 'no-store', credentials: 'same-origin' });
+    if (!response.ok) return null;
+    const result = await response.json();
+    return result.authenticated ? result.username : null;
+  } catch {
+    return null;
+  }
+}
+
+function currentScore() {
+  return [...solvedColors].reduce((sum, color) => sum + POINTS[color], 0) + (solvedColors.size === 4 ? 1000 : 0);
+}
+
+async function saveResult() {
+  if (resultSaved || !puzzle) return;
+  resultSaved = true;
+  try {
+    const response = await fetch('api/results', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'connections',
+        puzzleId: String(puzzle.id),
+        puzzleDate: puzzle.date,
+        solveTimeSeconds: Math.round((Date.now() - startedAt) / 1000),
+        solvedColors: [...solvedColors],
+        completed: solvedColors.size === 4
+      })
+    });
+    if (response.status === 401) {
+      resultSaved = false;
+      return { saved: false, loggedOut: true };
+    }
+    if (!response.ok) throw new Error('Could not save result');
+    const result = await response.json();
+    return { saved: true, ...result };
+  } catch {
+    resultSaved = false;
+    return { saved: false, loggedOut: false };
+  }
 }
 
 function render() {
@@ -72,7 +121,9 @@ function render() {
           <button id="deselect-btn" class="connections-secondary">Deselect all</button>
           <button id="submit-btn" class="connections-primary" ${selected.length !== 4 ? 'disabled' : ''}>Submit</button>
         </div>` : ''}
-      <div id="connections-message" class="connections-message">${gameOver ? (solvedColors.size === 4 && mistakes < 4 ? 'Great work!' : 'Game over — the answers are above.') : ''}</div>
+      <div id="connections-message" class="connections-message">${gameOver ? (solvedColors.size === 4 ? `Great work! +${currentScore().toLocaleString()} points` : `Game over — ${currentScore().toLocaleString()} points`) : ''}</div>
+      ${gameOver && !accountUsername ? '<a class="save-result-prompt" href="login.html">Log in to save your result and appear on the rankings.</a>' : ''}
+      ${accountUsername && !gameOver ? '<div class="account-hint">Your result will be saved to your profile when the puzzle ends.</div>' : ''}
     </div>`;
 
   app.querySelectorAll('.connection-tile').forEach(button => {
@@ -100,7 +151,17 @@ function selectedMatchesThree(group) {
   return group.words.filter(word => selectedTexts.includes(word)).length === 3;
 }
 
-function submitSelection() {
+async function finishGame() {
+  gameOver = true;
+  render();
+  const result = accountUsername ? await saveResult() : null;
+  if (result?.saved) {
+    const message = document.getElementById('connections-message');
+    if (message) message.textContent = result.completed ? `Great work! +${result.score.toLocaleString()} points saved.` : `${result.score.toLocaleString()} points saved.`;
+  }
+}
+
+async function submitSelection() {
   if (selected.length !== 4 || gameOver) return;
 
   const exactMatch = puzzle.groups.find(group => !solvedColors.has(group.color) && selectedMatchesGroup(group));
@@ -108,8 +169,8 @@ function submitSelection() {
     solvedColors.add(exactMatch.color);
     selected.forEach(id => solvedWords.add(id));
     selected = [];
-    if (solvedColors.size === 4) gameOver = true;
-    render();
+    if (solvedColors.size === 4) await finishGame();
+    else render();
     return;
   }
 
@@ -121,7 +182,6 @@ function submitSelection() {
   if (message) message.textContent = oneAway ? 'One away...' : 'Not quite.';
 
   if (mistakes >= 4) {
-    gameOver = true;
     puzzle.groups.forEach(group => {
       solvedColors.add(group.color);
       group.words.forEach(text => {
@@ -129,12 +189,13 @@ function submitSelection() {
         if (tile) solvedWords.add(tile.id);
       });
     });
-    setTimeout(render, 500);
+    await finishGame();
   }
 }
 
 async function init() {
   try {
+    [accountUsername] = await Promise.all([loadAccount()]);
     const data = await loadEntries();
     const entries = (data.connections || [])
       .map(normalizedEntry)
@@ -145,6 +206,7 @@ async function init() {
 
     if (puzzle) {
       words = shuffle(puzzle.groups.flatMap((group, groupIndex) => group.words.map((text, wordIndex) => ({ id: `${groupIndex}-${wordIndex}`, text }))));
+      startedAt = Date.now();
     }
     render();
 
