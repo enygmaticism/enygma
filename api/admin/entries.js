@@ -46,12 +46,27 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { type, title, date, content = '' } = req.body || {};
+    const { type, title, date, content = '', groups } = req.body || {};
     const validTypes = ['connections', 'crosswords', 'pyramids'];
     if (!validTypes.includes(type)) return res.status(400).json({ error: 'Invalid category.' });
     if (typeof title !== 'string' || !title.trim()) return res.status(400).json({ error: 'Title is required.' });
     if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'Date must be YYYY-MM-DD.' });
     if (typeof content !== 'string') return res.status(400).json({ error: 'Content must be text.' });
+
+    let normalizedGroups;
+    if (type === 'connections') {
+      if (!Array.isArray(groups) || groups.length !== 4) return res.status(400).json({ error: 'Connections needs exactly four categories.' });
+      normalizedGroups = groups.map((group, index) => ({
+        name: typeof group?.name === 'string' ? group.name.trim() : '',
+        color: ['yellow', 'green', 'blue', 'purple'][index],
+        words: Array.isArray(group?.words) ? group.words.map(word => String(word).trim()).filter(Boolean) : []
+      }));
+      if (normalizedGroups.some(group => !group.name || group.words.length !== 4)) {
+        return res.status(400).json({ error: 'Each Connections category needs a name and exactly four words.' });
+      }
+      const allWords = normalizedGroups.flatMap(group => group.words.map(word => word.toLowerCase()));
+      if (new Set(allWords).size !== 16) return res.status(400).json({ error: 'Connections words must be unique across the puzzle.' });
+    }
 
     const current = await getEntries();
     const decoded = Buffer.from(current.content, 'base64').toString('utf8');
@@ -62,8 +77,9 @@ export default async function handler(req, res) {
       id: `${type}-${Date.now()}`,
       title: title.trim(),
       date,
-      content: content.trim()
+      content: type === 'connections' ? '' : content.trim()
     };
+    if (type === 'connections') entry.groups = normalizedGroups;
     data[type].push(entry);
 
     const update = await fetch(`${GITHUB_API}/repos/${REPO}/contents/${DATA_PATH}`, {
