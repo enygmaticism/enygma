@@ -42,12 +42,24 @@
         </label>
         <label>Title<input id="entry-title" type="text" placeholder="e.g. Monday, August 25" required /></label>
         <label>Date<input id="entry-date" type="date" required /></label>
-        <label>Notes / content placeholder<textarea id="entry-content" rows="8" placeholder="Game-specific content will go here."></textarea></label>
+
+        <div id="standard-content-fields">
+          <label>Notes / content<textarea id="entry-content" rows="8" placeholder="Game-specific content will go here."></textarea></label>
+        </div>
+
+        <div id="connections-fields" class="hidden connections-admin-editor">
+          <div class="connections-admin-heading">
+            <div class="section-label">Connections puzzle</div>
+            <p>Enter four groups. Each group must contain four words. The group order sets the NYT-style difficulty colors: yellow, green, blue, purple.</p>
+          </div>
+          <div id="connections-groups"></div>
+        </div>
+
         <button type="submit">Add entry</button>
         <button type="button" class="secondary" id="logout-button">Log out</button>
         <p id="entry-message" class="form-message" role="status"></p>
       </form>
-      <p class="admin-note">Entries are committed directly to <code>data/entries.json</code> in the Enygma GitHub repository.</p>
+      <p class="admin-note">Connections puzzles are stored with four named groups and four words per group in <code>data/entries.json</code>.</p>
     </section>
 
     <footer class="site-footer">enygma</footer>
