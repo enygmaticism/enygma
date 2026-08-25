@@ -5,9 +5,9 @@ const GAME_COOKIE_NAME = 'enygma_connections_game';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 function secretKey() {
-  const secret = process.env.USER_DATA_KEY || `${process.env.ADMIN_PASSWORD || ''}\u0000${process.env.GITHUB_TOKEN || ''}`;
-  if (!secret || secret === '\u0000') throw new Error('Account encryption secret is not configured.');
-  return crypto.createHash('sha256').update(secret).digest();
+  const secret = process.env.ADMIN_PASSWORD || '';
+  if (!secret) throw new Error('ADMIN_PASSWORD is not configured.');
+  return crypto.createHash('sha256').update(`enygma-user-data:${secret}`).digest();
 }
 
 function hashPassword(password, salt) {
