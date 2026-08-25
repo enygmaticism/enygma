@@ -75,23 +75,23 @@
           ]
         },
         {
-          "name": "THINGS THAT CAN BE CRACKED",
-          "color": "blue",
-          "words": [
-            "CODE",
-            "EGG",
-            "JOKE",
-            "SAFE"
-          ]
-        },
-        {
           "name": "ASSOCIATED WITH RED",
-          "color": "purple",
+          "color": "blue",
           "words": [
             "ROSE",
             "VELVET CAKE",
             "SUN",
             "REDEMPTION"
+          ]
+        },
+        {
+          "name": "THINGS THAT CAN BE CRACKED",
+          "color": "purple",
+          "words": [
+            "CODE",
+            "EGG",
+            "JOKE",
+            "SAFE"
           ]
         }
       ]
