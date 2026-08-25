@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 
 const COOKIE_NAME = 'enygma_session';
 const GAME_COOKIE_NAME = 'enygma_connections_game';
+const ATTEMPT_COOKIE_NAME = 'enygma_puzzle_attempt';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 function secretKey() {
@@ -79,6 +80,19 @@ export function setConnectionsGame(res, state) {
 
 export function clearConnectionsGame(res) {
   res.setHeader('Set-Cookie', `${GAME_COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
+}
+
+export function getPuzzleAttempt(req) {
+  return verify(decodeURIComponent(getCookie(req, ATTEMPT_COOKIE_NAME)));
+}
+
+export function setPuzzleAttempt(res, state) {
+  const token = sign({ kind: 'attempt', ...state, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 12 });
+  res.setHeader('Set-Cookie', `${ATTEMPT_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=43200`);
+}
+
+export function clearPuzzleAttempt(res) {
+  res.setHeader('Set-Cookie', `${ATTEMPT_COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
 }
 
 export async function readUsers(readJsonFile) {
