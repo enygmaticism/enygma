@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enygma — Admin</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <main class="site-shell admin-shell">
+    <header class="site-header">
+      <a class="brand" href="index.html">enygma</a>
+      <a class="back-link" href="index.html">← Site</a>
+    </header>
+
+    <section class="category-heading">
+      <p class="eyebrow">Private area</p>
+      <h1>Admin</h1>
+      <p>Add and manage puzzle entries.</p>
+    </section>
+
+    <section id="login-panel" class="admin-panel">
+      <div class="section-label">Authentication</div>
+      <h2>Enter password</h2>
+      <form id="login-form" class="stack-form">
+        <label>Password<input id="password" type="password" autocomplete="current-password" required /></label>
+        <button type="submit">Continue</button>
+        <p id="login-message" class="form-message" role="alert"></p>
+      </form>
+    </section>
+
+    <section id="editor-panel" class="admin-panel hidden">
+      <div class="section-label">New entry</div>
+      <h2>Add a puzzle</h2>
+      <form id="entry-form" class="stack-form">
+        <label>Category
+          <select id="entry-type" required>
+            <option value="connections">Connections</option>
+            <option value="crosswords">Crosswords</option>
+            <option value="pyramids">Pyramids</option>
+          </select>
+        </label>
+        <label>Title<input id="entry-title" type="text" placeholder="e.g. Monday, August 25" required /></label>
+        <label>Date<input id="entry-date" type="date" required /></label>
+        <label>Notes / content placeholder<textarea id="entry-content" rows="8" placeholder="Game-specific content will go here."></textarea></label>
+        <button type="submit">Add entry</button>
+        <button type="button" class="secondary" id="logout-button">Log out</button>
+        <p id="entry-message" class="form-message" role="status"></p>
+      </form>
+      <p class="admin-note">The current skeleton stores the public data in <code>data/entries.json</code>. The secure GitHub write endpoint will be connected before this editor is used in production.</p>
+    </section>
+
+    <footer class="site-footer">enygma</footer>
+  </main>
+  <script src="assets/admin.js"></script>
+</body>
+</html>
