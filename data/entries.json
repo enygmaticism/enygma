@@ -1,5 +1,54 @@
 {
-  "connections": [],
+  "connections": [
+    {
+      "id": "connections-1787627009101",
+      "title": "LET ME GET YOUR NUMBER",
+      "date": "2026-08-25",
+      "content": "",
+      "groups": [
+        {
+          "name": "WINDOWS VERSIONS",
+          "color": "yellow",
+          "words": [
+            "7",
+            "10",
+            "11",
+            "95"
+          ]
+        },
+        {
+          "name": "IMPORTANT NUMBERS IN THE STORY OF JESUS",
+          "color": "green",
+          "words": [
+            "12",
+            "30",
+            "33",
+            "40"
+          ]
+        },
+        {
+          "name": "YEARS SERBIAN RULERS WERE ASSASSINATED",
+          "color": "blue",
+          "words": [
+            "1868",
+            "1903",
+            "1934",
+            "2003"
+          ]
+        },
+        {
+          "name": "YEARS US PRESIDENTS WERE ASSASSINATED",
+          "color": "purple",
+          "words": [
+            "1865",
+            "1881",
+            "1901",
+            "1963"
+          ]
+        }
+      ]
+    }
+  ],
   "crosswords": [],
   "pyramids": []
 }
