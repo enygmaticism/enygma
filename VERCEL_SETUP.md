@@ -4,19 +4,25 @@ The Enygma site can be deployed directly from this GitHub repository on Vercel.
 
 ## Environment variables
 
-Set these in the Vercel project for Production (and Preview only if desired):
+Set these in the Vercel project for Production:
 
 - `GITHUB_TOKEN` — a GitHub fine-grained personal access token with **Contents: Read and write** access to `enygmaticism/enygma`.
-- `ADMIN_PASSWORD` — the password you choose for the Enygma admin area.
+- `ADMIN_PASSWORD` — the private password for the Enygma admin page.
 
-After adding or changing either variable, redeploy the project.
+No IP allowlist is required.
+
+The player-account encryption key is derived server-side from the existing `ADMIN_PASSWORD` and `GITHUB_TOKEN`, so there is no third secret to configure.
+
+After changing either variable, redeploy the project.
 
 ## Admin
 
-Open `/admin.html`. The API verifies the password server-side and then issues an HTTP-only session cookie. The password is never stored in the repository or sent to GitHub.
+Open `/admin.html`. The admin password is checked by a serverless function. The GitHub token is used only on the server and is never sent to the browser.
 
-The GitHub token is used only by the serverless functions and is never sent to the browser.
+## Player accounts
 
-## Connections
+Open `/login.html` to create an account or log in. Passwords are salted and hashed with Node's `scrypt` and the entire credential database is encrypted before being committed to `data/users.secure.json`.
 
-Connections entries contain exactly four categories with exactly four unique words in each category. The four categories are displayed in this order: yellow, green, blue, purple, matching the game's difficulty order from easiest to hardest. The live game uses the latest dated Connections entry and the archive lists previous entries.
+Player results are stored separately in `data/results.json`. They contain usernames, puzzle results, solving times, group counts, and points — not passwords.
+
+Profiles are available at `/profile.html` and leaderboards at `/rankings.html`.
