@@ -1,12 +1,10 @@
-const nav = document.querySelector('.home-nav');
-
 async function updateAccountLink() {
   try {
     const response = await fetch('api/auth/me', { credentials: 'same-origin', cache: 'no-store' });
     const data = await response.json();
     const accountLink = document.getElementById('account-link');
     if (!accountLink) return;
-    if (response.ok && data.loggedIn) {
+    if (response.ok && data.authenticated) {
       accountLink.textContent = 'Profile';
       accountLink.href = 'profile.html';
     } else {
