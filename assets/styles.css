@@ -10,6 +10,8 @@ a { color:inherit; text-decoration:none; }
 .site-header { display:flex; justify-content:space-between; align-items:center; padding:28px 0; border-bottom:1px solid var(--line); }
 .brand { font:500 22px 'DM Mono',monospace; letter-spacing:-1px; }
 .admin-link,.back-link { font:400 13px 'DM Mono',monospace; color:var(--muted); }
+.home-nav,.account-nav { display:flex; align-items:center; gap:18px; font:500 12px 'DM Mono',monospace; }
+.home-nav a:hover,.account-nav a:hover { text-decoration:underline; }
 .hero { padding:100px 0 54px; max-width:720px; }
 .eyebrow,.section-label { font:500 11px 'DM Mono',monospace; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); }
 h1 { margin:12px 0 18px; font-size:clamp(48px,8vw,88px); line-height:.95; letter-spacing:-.065em; }
@@ -53,6 +55,50 @@ button.secondary { background:transparent; color:var(--ink); }
 .admin-note { margin-top:30px; max-width:650px; color:var(--muted); font-size:13px; line-height:1.6; }
 .hidden { display:none !important; }
 code { font-family:'DM Mono',monospace; }
+
+/* Player accounts */
+.auth-shell { max-width:720px; }
+.auth-heading { padding:78px 0 28px; }
+.auth-heading h1,.profile-heading h1,.rankings-heading h1 { margin:10px 0 14px; font-size:clamp(48px,8vw,76px); }
+.auth-heading p,.rankings-heading p { color:var(--muted); line-height:1.6; max-width:620px; }
+.auth-card { border:1px solid var(--line); background:var(--panel); padding:22px; margin-bottom:40px; }
+.auth-tabs { display:flex; border-bottom:1px solid var(--line); margin-bottom:24px; }
+.auth-tab { border:0; background:transparent; color:var(--muted); padding:12px 14px; }
+.auth-tab.active { color:var(--ink); box-shadow:inset 0 -2px 0 var(--ink); }
+.auth-form { max-width:520px; }
+.link-button { border:0; background:transparent; color:inherit; padding:0; font:inherit; }
+.profile-heading,.rankings-heading { padding:70px 0 30px; }
+.profile-points { display:flex; gap:18px; align-items:baseline; margin-top:28px; }
+.profile-points span { color:var(--muted); font:500 11px 'DM Mono',monospace; text-transform:uppercase; letter-spacing:.12em; }
+.profile-points strong { font:700 42px Arial,sans-serif; letter-spacing:-.04em; }
+.record-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.record-card { border:1px solid var(--line); background:var(--panel); padding:22px; }
+.record-main { margin:20px 0 18px; display:flex; align-items:baseline; gap:8px; }
+.record-main strong { font-size:42px; letter-spacing:-.06em; }
+.record-main span { color:var(--muted); }
+.record-card dl { margin:0; display:grid; gap:10px; }
+.record-card dl div { display:flex; justify-content:space-between; gap:18px; padding-top:10px; border-top:1px solid var(--line); }
+.record-card dt { color:var(--muted); font-size:12px; }
+.record-card dd { margin:0; font:500 12px 'DM Mono',monospace; }
+.profile-history { margin-top:44px; border-top:1px solid var(--line); padding-top:24px; }
+.result-history { margin-top:12px; border-top:1px solid var(--line); }
+.result-row { display:grid; grid-template-columns:1.4fr 1fr 1fr auto; gap:14px; padding:14px 0; border-bottom:1px solid var(--line); font-size:13px; }
+.result-row span:nth-child(2),.result-row span:nth-child(3) { color:var(--muted); }
+.result-row strong { font:500 12px 'DM Mono',monospace; }
+.rankings-shell { max-width:900px; }
+.ranking-tabs { display:flex; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--line); margin-bottom:18px; }
+.ranking-tab { border:0; background:transparent; color:var(--muted); padding:11px 13px; }
+.ranking-tab.active { color:var(--ink); box-shadow:inset 0 -2px 0 var(--ink); }
+.ranking-table-head,.ranking-row { display:grid; grid-template-columns:70px 1fr 100px 130px; gap:16px; align-items:center; }
+.ranking-table-head { padding:12px 14px; color:var(--muted); font:500 10px 'DM Mono',monospace; text-transform:uppercase; letter-spacing:.1em; }
+.ranking-row { padding:16px 14px; border-top:1px solid var(--line); background:var(--panel); }
+.ranking-row:nth-child(even) { background:#faf7ef; }
+.rank-number { font:500 12px 'DM Mono',monospace; }
+.rank-user { font-weight:700; }
+.ranking-row strong { text-align:right; font:500 13px 'DM Mono',monospace; }
+.ranking-row span:nth-child(3) { color:var(--muted); }
+.save-result-prompt,.save-result-note,.account-hint { display:block; text-align:center; margin:10px auto 0; max-width:520px; font-size:13px; color:#666; }
+.save-result-prompt { font-weight:700; color:#000; }
 
 .connections-page { background:#fff; color:#000; }
 .connections-shell { width:min(560px, calc(100% - 32px)); margin:0 auto; padding-bottom:70px; }
@@ -98,4 +144,4 @@ code { font-family:'DM Mono',monospace; }
 .connections-group-editor.blue { border-top:5px solid var(--nyt-blue); }
 .connections-group-editor.purple { border-top:5px solid var(--nyt-purple); }
 .connection-word-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:10px; }
-@media (max-width:760px) { .site-shell,.home-shell { width:min(100% - 28px,1320px); } .hero { padding:65px 0 38px; } .category-grid,.home-category-grid { grid-template-columns:1fr; } .category-card { min-height:190px; } .home-category-card { min-height:28vh; } .category-initial { font-size:150px; } .home-category-title { left:20px; bottom:18px; font-size:24px; } .archive-item { flex-direction:column; gap:6px; } .connection-tile { min-height:74px; font-size:12px; } .connections-shell { width:min(100% - 20px,560px); } }
+@media (max-width:760px) { .site-shell,.home-shell { width:min(100% - 28px,1320px); } .hero { padding:65px 0 38px; } .category-grid,.home-category-grid { grid-template-columns:1fr; } .category-card { min-height:190px; } .home-category-card { min-height:28vh; } .category-initial { font-size:150px; } .home-category-title { left:20px; bottom:18px; font-size:24px; } .archive-item { flex-direction:column; gap:6px; } .connection-tile { min-height:74px; font-size:12px; } .connections-shell { width:min(100% - 20px,560px); } .record-grid { grid-template-columns:1fr; } .result-row { grid-template-columns:1fr 1fr; } .result-row strong { text-align:left; } .ranking-table-head,.ranking-row { grid-template-columns:50px 1fr 60px 90px; gap:8px; } .home-nav,.account-nav { gap:10px; font-size:11px; } }
