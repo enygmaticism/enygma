@@ -9,92 +9,64 @@
 </head>
 <body>
   <main class="site-shell admin-shell">
-    <header class="site-header">
-      <a class="brand" href="index.html">enygma</a>
-      <a class="back-link" href="index.html">← Site</a>
-    </header>
-
-    <section class="category-heading">
-      <p class="eyebrow">Private area</p>
-      <h1>Admin</h1>
-      <p>Manage the puzzle archive and create new entries.</p>
-    </section>
+    <header class="site-header"><a class="brand" href="index.html">enygma</a><a class="back-link" href="index.html">← Site</a></header>
+    <section class="category-heading"><p class="eyebrow">Private area</p><h1>Admin</h1><p>Manage the puzzle archive and create new entries.</p></section>
 
     <section id="login-panel" class="admin-panel">
-      <div class="section-label">Access</div>
-      <h2>Admin login</h2>
-      <form id="login-form" class="stack-form">
-        <label>Password<input id="password" type="password" autocomplete="current-password" required /></label>
-        <button type="submit">Continue</button>
-        <p id="login-message" class="form-message" role="alert"></p>
-      </form>
+      <div class="section-label">Access</div><h2>Admin login</h2>
+      <form id="login-form" class="stack-form"><label>Password<input id="password" type="password" autocomplete="current-password" required /></label><button type="submit">Continue</button><p id="login-message" class="form-message" role="alert"></p></form>
     </section>
 
     <section id="editor-panel" class="hidden">
       <section class="admin-panel">
-        <div class="section-heading">
-          <div><div class="section-label">New entry</div><h2>Add a puzzle</h2></div>
-        </div>
+        <div class="section-label">New entry</div><h2>Add a puzzle</h2>
         <form id="entry-form" class="stack-form">
-          <label>Category
-            <select id="entry-type" required>
-              <option value="connections">Connections</option>
-              <option value="crosswords">Crosswords</option>
-              <option value="pyramids">Pyramids</option>
-            </select>
-          </label>
+          <label>Category<select id="entry-type" required><option value="connections">Connections</option><option value="crosswords">Crosswords</option><option value="pyramids">Pyramids</option></select></label>
           <label>Title<input id="entry-title" type="text" placeholder="Puzzle title" required /></label>
           <label>Date<input id="entry-date" type="date" required /></label>
-          <div id="standard-content-fields">
-            <label>Notes / content<textarea id="entry-content" rows="8"></textarea></label>
-          </div>
+          <div id="standard-content-fields"><label>Notes / content<textarea id="entry-content" rows="8"></textarea></label></div>
+
           <div id="connections-fields" class="hidden connections-admin-editor">
-            <div class="connections-admin-heading"><div class="section-label">Connections puzzle</div><p>Four groups, four words each. Group order sets yellow, green, blue, purple difficulty.</p></div>
-            <div id="connections-groups"></div>
+            <div class="connections-admin-heading"><div class="section-label">Connections puzzle</div><p>Four groups, four words each.</p></div><div id="connections-groups"></div>
           </div>
+
           <div id="pyramids-fields" class="hidden connections-admin-editor">
-            <div class="connections-admin-heading"><div class="section-label">Pyramid puzzle</div><p>Choose the number of rows, then enter one clue and one answer for each row. Each row is one letter longer and must contain the previous row's letters plus exactly one new letter.</p></div>
+            <div class="connections-admin-heading"><div class="section-label">Branching Pyramid</div><p>Row 1 has two possible answers. The answer chosen by the player determines which clue path appears next. Each branch adds exactly one Serbian letter per row. NJ, LJ and DŽ count as one letter.</p></div>
             <label>Number of rows<input id="pyramid-row-count" type="number" min="1" max="30" value="10" required /></label>
-            <div id="pyramid-rows" class="pyramid-admin-grid"></div>
+            <label>Row 1 clue<input id="pyramid-first-clue" type="text" required /></label>
+            <div class="pyramid-branch-choice-grid">
+              <label>First answer A<input id="pyramid-first-a" type="text" maxlength="2" required /></label>
+              <label>First answer B<input id="pyramid-first-b" type="text" maxlength="2" required /></label>
+            </div>
+            <div class="pyramid-branch-admin"><div><h3>Branch A</h3><p>Used when the player answers with A.</p></div><div id="pyramid-branch-a"></div></div>
+            <div class="pyramid-branch-admin"><div><h3>Branch B</h3><p>Used when the player answers with B.</p></div><div id="pyramid-branch-b"></div></div>
           </div>
-          <button type="submit">Add entry</button>
-          <p id="entry-message" class="form-message" role="status"></p>
+
+          <button type="submit">Add entry</button><p id="entry-message" class="form-message" role="status"></p>
         </form>
       </section>
 
-      <section class="admin-panel">
-        <div class="section-label">Archive manager</div>
-        <h2>Edit puzzles</h2>
-        <div class="archive-editor-toolbar">
-          <select id="manage-type" aria-label="Archive category">
-            <option value="connections">Connections</option>
-            <option value="crosswords">Crosswords</option>
-            <option value="pyramids">Pyramids</option>
-          </select>
-          <button type="button" class="secondary" id="refresh-puzzles">Refresh</button>
-        </div>
-        <div id="puzzle-list" class="puzzle-manager-list"></div>
-        <p id="manage-message" class="form-message" role="status"></p>
-      </section>
+      <section class="admin-panel"><div class="section-label">Archive manager</div><h2>Edit puzzles</h2><div class="archive-editor-toolbar"><select id="manage-type"><option value="connections">Connections</option><option value="crosswords">Crosswords</option><option value="pyramids">Pyramids</option></select><button type="button" class="secondary" id="refresh-puzzles">Refresh</button></div><div id="puzzle-list" class="puzzle-manager-list"></div><p id="manage-message" class="form-message"></p></section>
 
       <section id="edit-panel" class="admin-panel hidden">
-        <div class="section-label">Edit entry</div>
-        <h2 id="edit-heading">Edit puzzle</h2>
+        <div class="section-label">Edit entry</div><h2 id="edit-heading">Edit puzzle</h2>
         <form id="edit-form" class="stack-form">
           <input id="edit-id" type="hidden" />
-          <label>Title<input id="edit-title" type="text" required /></label>
-          <label>Date<input id="edit-date" type="date" required /></label>
+          <label>Title<input id="edit-title" type="text" required /></label><label>Date<input id="edit-date" type="date" required /></label>
           <div id="edit-standard-fields"><label>Notes / content<textarea id="edit-content" rows="8"></textarea></label></div>
           <div id="edit-connections-fields" class="hidden connections-admin-editor"><div id="edit-connections-groups"></div></div>
-          <div id="edit-pyramids-fields" class="hidden"><div id="edit-pyramid-rows" class="pyramid-admin-grid"></div></div>
-          <div class="edit-actions"><button type="submit">Save changes</button><button type="button" class="secondary" id="cancel-edit">Cancel</button></div>
-          <p id="edit-message" class="form-message" role="status"></p>
+          <div id="edit-pyramids-fields" class="hidden connections-admin-editor">
+            <label>Number of rows<input id="edit-pyramid-row-count" type="number" min="1" max="30" required /></label>
+            <label>Row 1 clue<input id="edit-pyramid-first-clue" type="text" required /></label>
+            <div class="pyramid-branch-choice-grid"><label>First answer A<input id="edit-pyramid-first-a" type="text" maxlength="2" required /></label><label>First answer B<input id="edit-pyramid-first-b" type="text" maxlength="2" required /></label></div>
+            <div class="pyramid-branch-admin"><div><h3>Branch A</h3></div><div id="edit-pyramid-branch-a"></div></div>
+            <div class="pyramid-branch-admin"><div><h3>Branch B</h3></div><div id="edit-pyramid-branch-b"></div></div>
+          </div>
+          <div class="edit-actions"><button type="submit">Save changes</button><button type="button" class="secondary" id="cancel-edit">Cancel</button></div><p id="edit-message" class="form-message"></p>
         </form>
       </section>
-
       <div class="admin-actions-row"><button type="button" class="secondary" id="logout-button">Log out</button></div>
     </section>
-
     <footer class="site-footer">enygma</footer>
   </main>
   <script src="assets/admin.js"></script>
