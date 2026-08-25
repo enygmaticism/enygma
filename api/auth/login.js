@@ -1,6 +1,5 @@
 import { readJsonFile } from '../_lib/github.js';
-import { readUsers, verifyPassword, normalizeUsername } from '../_lib/auth.js';
-import { setSession } from '../_lib/auth.js';
+import { readUsers, verifyPassword, normalizeUsername, setSession } from '../_lib/auth.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -8,7 +7,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  if (!process.env.GITHUB_TOKEN || !process.env.USER_DATA_KEY) {
+  if (!process.env.GITHUB_TOKEN || !process.env.ADMIN_PASSWORD) {
     return res.status(503).json({ error: 'Account service is not configured.' });
   }
 
