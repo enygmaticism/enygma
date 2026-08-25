@@ -16,17 +16,13 @@
     <section class="category-heading">
       <p class="eyebrow">Private area</p>
       <h1>Admin</h1>
-      <p>Add and manage puzzle entries.</p>
+      <p>This page is accessible only from the configured admin IP.</p>
     </section>
 
     <section id="login-panel" class="admin-panel">
-      <div class="section-label">Authentication</div>
-      <h2>Enter password</h2>
-      <form id="login-form" class="stack-form">
-        <label>Password<input id="password" type="password" autocomplete="current-password" required /></label>
-        <button type="submit">Continue</button>
-        <p id="login-message" class="form-message" role="alert"></p>
-      </form>
+      <div class="section-label">Access</div>
+      <h2>Checking access…</h2>
+      <p id="login-message" class="form-message" role="alert"></p>
     </section>
 
     <section id="editor-panel" class="admin-panel hidden">
@@ -44,10 +40,9 @@
         <label>Date<input id="entry-date" type="date" required /></label>
         <label>Notes / content placeholder<textarea id="entry-content" rows="8" placeholder="Game-specific content will go here."></textarea></label>
         <button type="submit">Add entry</button>
-        <button type="button" class="secondary" id="logout-button">Log out</button>
         <p id="entry-message" class="form-message" role="status"></p>
       </form>
-      <p class="admin-note">The current skeleton stores the public data in <code>data/entries.json</code>. The secure GitHub write endpoint will be connected before this editor is used in production.</p>
+      <p class="admin-note">Entries are committed directly to <code>data/entries.json</code> in the Enygma GitHub repository.</p>
     </section>
 
     <footer class="site-footer">enygma</footer>
