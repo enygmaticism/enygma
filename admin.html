@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Enygma — Admin</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/pyramids.css" />
 </head>
 <body>
   <main class="site-shell admin-shell">
@@ -32,10 +33,7 @@
     <section id="editor-panel" class="hidden">
       <section class="admin-panel">
         <div class="section-heading">
-          <div>
-            <div class="section-label">New entry</div>
-            <h2>Add a puzzle</h2>
-          </div>
+          <div><div class="section-label">New entry</div><h2>Add a puzzle</h2></div>
         </div>
         <form id="entry-form" class="stack-form">
           <label>Category
@@ -45,17 +43,19 @@
               <option value="pyramids">Pyramids</option>
             </select>
           </label>
-          <label>Title<input id="entry-title" type="text" placeholder="e.g. Monday, August 25" required /></label>
+          <label>Title<input id="entry-title" type="text" placeholder="Puzzle title" required /></label>
           <label>Date<input id="entry-date" type="date" required /></label>
           <div id="standard-content-fields">
-            <label>Notes / content<textarea id="entry-content" rows="8" placeholder="Game-specific content will go here."></textarea></label>
+            <label>Notes / content<textarea id="entry-content" rows="8"></textarea></label>
           </div>
           <div id="connections-fields" class="hidden connections-admin-editor">
-            <div class="connections-admin-heading">
-              <div class="section-label">Connections puzzle</div>
-              <p>Four groups, four words each. Group order sets yellow, green, blue, purple difficulty.</p>
-            </div>
+            <div class="connections-admin-heading"><div class="section-label">Connections puzzle</div><p>Four groups, four words each. Group order sets yellow, green, blue, purple difficulty.</p></div>
             <div id="connections-groups"></div>
+          </div>
+          <div id="pyramids-fields" class="hidden connections-admin-editor">
+            <div class="connections-admin-heading"><div class="section-label">Pyramid puzzle</div><p>Choose the number of rows, then enter one clue and one answer for each row. Each row is one letter longer and must contain the previous row's letters plus exactly one new letter.</p></div>
+            <label>Number of rows<input id="pyramid-row-count" type="number" min="1" max="30" value="10" required /></label>
+            <div id="pyramid-rows" class="pyramid-admin-grid"></div>
           </div>
           <button type="submit">Add entry</button>
           <p id="entry-message" class="form-message" role="status"></p>
@@ -84,16 +84,10 @@
           <input id="edit-id" type="hidden" />
           <label>Title<input id="edit-title" type="text" required /></label>
           <label>Date<input id="edit-date" type="date" required /></label>
-          <div id="edit-standard-fields">
-            <label>Notes / content<textarea id="edit-content" rows="8"></textarea></label>
-          </div>
-          <div id="edit-connections-fields" class="hidden connections-admin-editor">
-            <div id="edit-connections-groups"></div>
-          </div>
-          <div class="edit-actions">
-            <button type="submit">Save changes</button>
-            <button type="button" class="secondary" id="cancel-edit">Cancel</button>
-          </div>
+          <div id="edit-standard-fields"><label>Notes / content<textarea id="edit-content" rows="8"></textarea></label></div>
+          <div id="edit-connections-fields" class="hidden connections-admin-editor"><div id="edit-connections-groups"></div></div>
+          <div id="edit-pyramids-fields" class="hidden"><div id="edit-pyramid-rows" class="pyramid-admin-grid"></div></div>
+          <div class="edit-actions"><button type="submit">Save changes</button><button type="button" class="secondary" id="cancel-edit">Cancel</button></div>
           <p id="edit-message" class="form-message" role="status"></p>
         </form>
       </section>
