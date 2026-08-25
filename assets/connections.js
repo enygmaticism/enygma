@@ -136,9 +136,12 @@ function submitSelection() {
 async function init() {
   try {
     const data = await loadEntries();
-    const entries = (data.connections || []).map(normalizedEntry).sort((a, b) => new Date(b.date) - new Date(a.date));
-    const requestedDate = new URLSearchParams(location.search).get('date');
-    puzzle = requestedDate ? entries.find(entry => entry.date === requestedDate) || entries[0] : entries[0];
+    const entries = (data.connections || [])
+      .map(normalizedEntry)
+      .sort((a, b) => new Date(b.date) - new Date(a.date) || String(b.id).localeCompare(String(a.id)));
+
+    const requestedId = new URLSearchParams(location.search).get('id');
+    puzzle = requestedId ? entries.find(entry => String(entry.id) === requestedId) || entries[0] : entries[0];
 
     if (puzzle) {
       words = shuffle(puzzle.groups.flatMap((group, groupIndex) => group.words.map((text, wordIndex) => ({ id: `${groupIndex}-${wordIndex}`, text }))));
@@ -149,7 +152,7 @@ async function init() {
     if (!entries.length) {
       archive.innerHTML = '<div class="connections-empty">no entries currently.</div>';
     } else {
-      archive.innerHTML = entries.map((entry, index) => `<a class="connections-archive-item" href="connections.html?date=${encodeURIComponent(entry.date)}">${escapeHtml(entry.title || entry.date)}<span>${escapeHtml(entry.date)}${index === 0 ? ' · latest' : ''}</span></a>`).join('');
+      archive.innerHTML = entries.map((entry, index) => `<a class="connections-archive-item" href="connections.html?id=${encodeURIComponent(entry.id)}">${escapeHtml(entry.title || entry.date)}<span>${escapeHtml(entry.date)}${index === 0 ? ' · latest' : ''}</span></a>`).join('');
     }
   } catch {
     document.getElementById('connections-app').innerHTML = '<div class="connections-empty">Unable to load entries.</div>';
