@@ -5,36 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Enygma — Connections, Crosswords and Pyramids." />
   <title>Enygma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
-  <main class="site-shell">
+  <main class="home-shell">
     <header class="site-header">
       <a class="brand" href="index.html">enygma</a>
       <a class="admin-link" href="admin.html">Admin</a>
     </header>
 
-    <section class="hero">
-      <p class="eyebrow">Daily puzzles</p>
-      <h1>Choose your game.</h1>
-      <p class="hero-copy">Connections, crosswords and pyramids — with the latest puzzle front and center.</p>
-    </section>
-
-    <section class="category-grid" aria-label="Puzzle categories">
-      <a class="category-card connections" href="connections.html">
-        <span class="card-number">01</span>
-        <span class="card-title">Connections</span>
-        <span class="card-description">Find the four groups.</span>
+    <section class="home-category-grid" aria-label="Puzzle categories">
+      <a class="home-category-card home-category-connections" href="connections.html">
+        <span class="category-initial" aria-hidden="true">C</span>
+        <span class="home-category-title">Connections</span>
       </a>
-      <a class="category-card crosswords" href="category.html?type=crosswords">
-        <span class="card-number">02</span>
-        <span class="card-title">Crosswords</span>
-        <span class="card-description">Clues, crossings and deductions.</span>
+      <a class="home-category-card home-category-crosswords" href="category.html?type=crosswords">
+        <span class="category-initial category-initial-italic" aria-hidden="true">C</span>
+        <span class="home-category-title">Crosswords</span>
       </a>
-      <a class="category-card pyramids" href="category.html?type=pyramids">
-        <span class="card-number">03</span>
-        <span class="card-title">Pyramids</span>
-        <span class="card-description">Build your way to the top.</span>
+      <a class="home-category-card home-category-pyramids" href="category.html?type=pyramids">
+        <span class="category-initial category-initial-serif" aria-hidden="true">P</span>
+        <span class="home-category-title">Pyramids</span>
       </a>
     </section>
 
