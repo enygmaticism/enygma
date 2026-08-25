@@ -1,10 +1,4 @@
 const COLORS = ['yellow', 'green', 'blue', 'purple'];
-const CONFIG = {
-  yellow: 'Yellow',
-  green: 'Green',
-  blue: 'Blue',
-  purple: 'Purple'
-};
 
 let puzzle = null;
 let words = [];
@@ -68,7 +62,7 @@ function render() {
             <span>${group.words.map(escapeHtml).join(', ')}</span>
           </div>`).join('')}
       </div>
-      ${remaining.length ? `
+      ${remaining.length && !gameOver ? `
         <div class="connections-grid" role="group" aria-label="Connection words">
           ${remaining.map(word => `<button class="connection-tile ${selected.includes(word.id) ? 'selected' : ''}" data-id="${escapeHtml(word.id)}">${escapeHtml(word.text)}</button>`).join('')}
         </div>
@@ -77,8 +71,7 @@ function render() {
           <button id="deselect-btn" class="connections-secondary">Deselect all</button>
           <button id="submit-btn" class="connections-primary" ${selected.length !== 4 ? 'disabled' : ''}>Submit</button>
         </div>` : ''}
-      <div id="connections-message" class="connections-message">${gameOver ? (solved.size === 4 ? 'Great work!' : 'Game over — the groups are revealed below.') : ''}</div>
-      ${gameOver ? `<button id="restart-btn" class="connections-secondary">Play again</button>` : ''}
+      <div id="connections-message" class="connections-message">${gameOver ? (mistakes < 4 ? 'Great work!' : 'Game over — the answers are above.') : ''}</div>
     </div>`;
 
   app.querySelectorAll('.connection-tile').forEach(button => {
@@ -87,7 +80,6 @@ function render() {
   document.getElementById('shuffle-btn')?.addEventListener('click', () => { words = shuffle(words); render(); });
   document.getElementById('deselect-btn')?.addEventListener('click', () => { selected = []; render(); });
   document.getElementById('submit-btn')?.addEventListener('click', submitSelection);
-  document.getElementById('restart-btn')?.addEventListener('click', restartGame);
 }
 
 function toggleSelection(id) {
@@ -97,13 +89,22 @@ function toggleSelection(id) {
   render();
 }
 
+function selectedMatchesGroup(group) {
+  const selectedTexts = selected.map(id => words.find(word => word.id === id)?.text);
+  return selectedTexts.length === 4 && group.words.every(word => selectedTexts.includes(word));
+}
+
+function selectedMatchesThree(group) {
+  const selectedTexts = selected.map(id => words.find(word => word.id === id)?.text);
+  return group.words.filter(word => selectedTexts.includes(word)).length === 3;
+}
+
 function submitSelection() {
   if (selected.length !== 4 || gameOver) return;
-  const chosenTexts = new Set(selected.map(id => words.find(word => word.id === id)?.text));
-  const group = puzzle.groups.find(group => group.words.every(word => chosenTexts.has(word)) && selected.every(id => group.words.includes(words.find(word => word.id === id)?.text)));
 
-  if (group) {
-    solved.add(group.color);
+  const exactMatch = puzzle.groups.find(group => !solved.has(group.color) && selectedMatchesGroup(group));
+  if (exactMatch) {
+    solved.add(exactMatch.color);
     selected = [];
     if (solved.size === 4) gameOver = true;
     render();
@@ -111,37 +112,37 @@ function submitSelection() {
   }
 
   mistakes += 1;
-  const message = document.getElementById('connections-message');
-  if (message) message.textContent = 'One away...';
+  const oneAway = puzzle.groups.some(group => !solved.has(group.color) && selectedMatchesThree(group));
   selected = [];
+  render();
+  const message = document.getElementById('connections-message');
+  if (message) message.textContent = oneAway ? 'One away...' : 'Not quite.';
+
   if (mistakes >= 4) {
     gameOver = true;
     puzzle.groups.forEach(group => solved.add(group.color));
+    setTimeout(render, 500);
   }
-  setTimeout(render, 600);
-}
-
-function restartGame() {
-  mistakes = 0;
-  solved = new Set();
-  selected = [];
-  gameOver = false;
-  words = shuffle(puzzle.groups.flatMap((group, groupIndex) => group.words.map((text, wordIndex) => ({ id: `${groupIndex}-${wordIndex}`, text }))));
-  render();
 }
 
 async function init() {
   try {
     const data = await loadEntries();
     const entries = (data.connections || []).map(normalizedEntry).sort((a, b) => new Date(b.date) - new Date(a.date));
-    puzzle = entries[0] || null;
+    const requestedDate = new URLSearchParams(location.search).get('date');
+    puzzle = requestedDate ? entries.find(entry => entry.date === requestedDate) || entries[0] : entries[0];
+
     if (puzzle) {
       words = shuffle(puzzle.groups.flatMap((group, groupIndex) => group.words.map((text, wordIndex) => ({ id: `${groupIndex}-${wordIndex}`, text }))));
     }
     render();
+
     const archive = document.getElementById('connections-archive-list');
-    if (!entries.length) archive.innerHTML = '<div class="connections-empty">no entries currently.</div>';
-    else archive.innerHTML = entries.map((entry, index) => `<a class="connections-archive-item" href="connections.html?date=${encodeURIComponent(entry.date)}">${escapeHtml(entry.title || entry.date)}<span>${escapeHtml(entry.date)}${index === 0 ? ' · latest' : ''}</span></a>`).join('');
+    if (!entries.length) {
+      archive.innerHTML = '<div class="connections-empty">no entries currently.</div>';
+    } else {
+      archive.innerHTML = entries.map((entry, index) => `<a class="connections-archive-item" href="connections.html?date=${encodeURIComponent(entry.date)}">${escapeHtml(entry.title || entry.date)}<span>${escapeHtml(entry.date)}${index === 0 ? ' · latest' : ''}</span></a>`).join('');
+    }
   } catch {
     document.getElementById('connections-app').innerHTML = '<div class="connections-empty">Unable to load entries.</div>';
   }
