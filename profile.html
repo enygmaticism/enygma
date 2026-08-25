@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enygma — Profile</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <main class="site-shell profile-shell">
+    <header class="site-header">
+      <a class="brand" href="index.html">enygma</a>
+      <nav class="account-nav"><a href="rankings.html">Rankings</a><button id="logout-btn" class="link-button">Log out</button></nav>
+    </header>
+
+    <section class="profile-heading">
+      <p class="eyebrow">Player profile</p>
+      <h1 id="profile-username">Loading…</h1>
+      <div class="profile-points"><span>Total points</span><strong id="total-points">0</strong></div>
+    </section>
+
+    <section class="record-grid" id="record-grid"></section>
+
+    <section class="profile-history">
+      <div class="section-label">Recent results</div>
+      <div id="result-history" class="result-history"></div>
+    </section>
+    <footer class="site-footer">enygma</footer>
+  </main>
+  <script src="assets/profile.js"></script>
+</body>
+</html>
