@@ -4,7 +4,8 @@ let puzzle = null;
 let words = [];
 let selected = [];
 let mistakes = 0;
-let solved = new Set();
+let solvedColors = new Set();
+let solvedWords = new Set();
 let gameOver = false;
 
 function escapeHtml(value) {
@@ -45,8 +46,8 @@ function render() {
     return;
   }
 
-  const remaining = words.filter(word => !solved.has(word.id));
-  const solvedGroups = puzzle.groups.filter(group => solved.has(group.color));
+  const remaining = words.filter(word => !solvedWords.has(word.id));
+  const solvedGroups = puzzle.groups.filter(group => solvedColors.has(group.color));
 
   app.innerHTML = `
     <div class="connections-game">
@@ -71,7 +72,7 @@ function render() {
           <button id="deselect-btn" class="connections-secondary">Deselect all</button>
           <button id="submit-btn" class="connections-primary" ${selected.length !== 4 ? 'disabled' : ''}>Submit</button>
         </div>` : ''}
-      <div id="connections-message" class="connections-message">${gameOver ? (mistakes < 4 ? 'Great work!' : 'Game over — the answers are above.') : ''}</div>
+      <div id="connections-message" class="connections-message">${gameOver ? (solvedColors.size === 4 && mistakes < 4 ? 'Great work!' : 'Game over — the answers are above.') : ''}</div>
     </div>`;
 
   app.querySelectorAll('.connection-tile').forEach(button => {
@@ -83,7 +84,7 @@ function render() {
 }
 
 function toggleSelection(id) {
-  if (gameOver || solved.has(id)) return;
+  if (gameOver || solvedWords.has(id)) return;
   if (selected.includes(id)) selected = selected.filter(value => value !== id);
   else if (selected.length < 4) selected = [...selected, id];
   render();
@@ -102,17 +103,18 @@ function selectedMatchesThree(group) {
 function submitSelection() {
   if (selected.length !== 4 || gameOver) return;
 
-  const exactMatch = puzzle.groups.find(group => !solved.has(group.color) && selectedMatchesGroup(group));
+  const exactMatch = puzzle.groups.find(group => !solvedColors.has(group.color) && selectedMatchesGroup(group));
   if (exactMatch) {
-    solved.add(exactMatch.color);
+    solvedColors.add(exactMatch.color);
+    selected.forEach(id => solvedWords.add(id));
     selected = [];
-    if (solved.size === 4) gameOver = true;
+    if (solvedColors.size === 4) gameOver = true;
     render();
     return;
   }
 
   mistakes += 1;
-  const oneAway = puzzle.groups.some(group => !solved.has(group.color) && selectedMatchesThree(group));
+  const oneAway = puzzle.groups.some(group => !solvedColors.has(group.color) && selectedMatchesThree(group));
   selected = [];
   render();
   const message = document.getElementById('connections-message');
@@ -120,7 +122,13 @@ function submitSelection() {
 
   if (mistakes >= 4) {
     gameOver = true;
-    puzzle.groups.forEach(group => solved.add(group.color));
+    puzzle.groups.forEach(group => {
+      solvedColors.add(group.color);
+      group.words.forEach(text => {
+        const tile = words.find(word => word.text === text);
+        if (tile) solvedWords.add(tile.id);
+      });
+    });
     setTimeout(render, 500);
   }
 }
