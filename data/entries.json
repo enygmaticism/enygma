@@ -98,5 +98,15 @@
     }
   ],
   "crosswords": [],
-  "pyramids": []
+  "pyramids": [
+    {
+      "id": "pyramids-1787732325560",
+      "title": "PRVI USPON",
+      "date": "2026-08-26",
+      "content": "",
+      "rowCount": 5,
+      "firstClue": "Prvo slovo imena Golubovog najboljeg prijatelja",
+      "length": 1
+    }
+  ]
 }
