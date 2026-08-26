@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { readJsonFile, updateJsonFile } from '../_lib/github.js';
+import { readSecurePyramids, writeSecurePyramids, encryptPyramids } from '../../lib/pyramids.js';
 
 const TYPES = ['connections', 'crosswords', 'pyramids'];
 const ADMIN_COOKIE = 'enygma_admin';
@@ -60,6 +61,14 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       data[type].splice(index, 1);
       await updateJsonFile('data/entries.json', { connections: [], crosswords: [], pyramids: [] }, () => data, `Delete ${type} puzzle: ${id}`);
+      if (type === 'pyramids') {
+        const secure = await readSecurePyramids();
+        if (Object.prototype.hasOwnProperty.call(secure.data, id)) {
+          const next = { ...secure.data };
+          delete next[id];
+          await writeSecurePyramids({ ciphertext: encryptPyramids(next) }, secure.sha, `Delete secure pyramid: ${id}`);
+        }
+      }
       return res.status(200).json({ ok: true });
     }
 
