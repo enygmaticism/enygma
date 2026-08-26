@@ -1,6 +1,7 @@
 import { readJsonFile } from './_lib/github.js';
 
 const TYPES = ['all', 'connections', 'crosswords', 'pyramids'];
+const EXCLUDED_USERS = new Set(['golubovic_testing']);
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -14,7 +15,7 @@ export default async function handler(req, res) {
   try {
     const current = await readJsonFile('data/results.json', { results: [] });
     const results = Array.isArray(current.data.results) ? current.data.results : [];
-    const filtered = category === 'all' ? results : results.filter(result => result.type === category);
+    const filtered = results.filter(result => !EXCLUDED_USERS.has(String(result.username || '').toLowerCase()) && (category === 'all' || result.type === category));
     const byUser = new Map();
 
     for (const result of filtered) {
