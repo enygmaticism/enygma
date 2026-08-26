@@ -59,6 +59,18 @@
       "completed": true,
       "score": 750,
       "createdAt": "2026-08-26T08:33:34.025Z"
+    },
+    {
+      "id": "golubovic_testing-pyramids-1787732325560-1787734136016",
+      "username": "golubovic_testing",
+      "type": "pyramids",
+      "puzzleId": "pyramids-1787732325560",
+      "puzzleDate": "2026-08-26",
+      "solveTimeSeconds": 137,
+      "rowsSolved": 5,
+      "completed": true,
+      "score": 750,
+      "createdAt": "2026-08-26T08:48:56.016Z"
     }
   ]
 }
