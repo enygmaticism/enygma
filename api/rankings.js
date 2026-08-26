@@ -18,13 +18,16 @@ export default async function handler(req, res) {
     const byUser = new Map();
 
     for (const result of filtered) {
-      const row = byUser.get(result.username) || { username: result.username, points: 0, solved: 0 };
+      const row = byUser.get(result.username) || { username: result.username, points: 0, solved: 0, played: 0, totalTimeSeconds: 0 };
       row.points += Number(result.score || 0);
+      row.played += 1;
+      row.totalTimeSeconds += Number(result.solveTimeSeconds || 0);
       row.solved += result.completed ? 1 : 0;
       byUser.set(result.username, row);
     }
 
     const rankings = [...byUser.values()]
+      .map(row => ({ ...row, averageTimeSeconds: row.played ? Math.round(row.totalTimeSeconds / row.played) : null }))
       .sort((a, b) => b.points - a.points || b.solved - a.solved || a.username.localeCompare(b.username))
       .map((row, index) => ({ rank: index + 1, ...row }));
 
