@@ -23,10 +23,19 @@ function authenticated(req) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+function noStore(res) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+}
+
 export default function handler(req, res) {
+  noStore(res);
+
   if (req.method === 'GET') {
-    return res.status(200).json({
-      allowed: authenticated(req),
+    const allowed = authenticated(req);
+    return res.status(allowed ? 200 : 403).json({
+      allowed,
       configuration: {
         adminPasswordConfigured: Boolean(process.env.ADMIN_PASSWORD),
         githubTokenConfigured: Boolean(process.env.GITHUB_TOKEN)
