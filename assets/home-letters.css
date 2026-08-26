@@ -1,0 +1,38 @@
+/* Homepage letter treatment: oversized editorial glyphs with a lighter, more geometric feel. */
+.home-category-card .category-initial {
+  font-family:'Space Grotesk',Arial,sans-serif;
+  font-size:clamp(210px,25vw,370px);
+  font-weight:700;
+  line-height:.78;
+  letter-spacing:-.13em;
+  transform:translate(-.045em,-.03em);
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),font-weight .2s ease;
+  user-select:none;
+}
+.home-category-card:hover .category-initial {
+  transform:translate(-.045em,-.07em) scale(1.045);
+}
+.home-category-card .category-initial-italic {
+  font-family:'Fraunces',Georgia,serif;
+  font-style:italic;
+  font-weight:600;
+  letter-spacing:-.18em;
+  transform:translate(-.02em,-.035em);
+}
+.home-category-card:hover .category-initial-italic {
+  transform:translate(-.02em,-.075em) scale(1.04);
+}
+.home-category-card .category-initial-serif {
+  font-family:'Fraunces',Georgia,serif;
+  font-weight:600;
+  letter-spacing:-.12em;
+  transform:translate(-.02em,-.035em);
+}
+.home-category-card:hover .category-initial-serif {
+  transform:translate(-.02em,-.075em) scale(1.04);
+}
+.home-category-title {
+  font-family:'Space Grotesk',Arial,sans-serif;
+  font-weight:600;
+  letter-spacing:-.035em;
+}
