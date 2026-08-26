@@ -24,8 +24,22 @@ function authenticated(req) {
 }
 
 export default function handler(req, res) {
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      allowed: authenticated(req),
+      configuration: {
+        adminPasswordConfigured: Boolean(process.env.ADMIN_PASSWORD),
+        githubTokenConfigured: Boolean(process.env.GITHUB_TOKEN)
+      }
+    });
+  }
+
   if (!process.env.ADMIN_PASSWORD) {
-    return res.status(503).json({ allowed: false, error: 'Admin password is not configured yet.' });
+    return res.status(503).json({
+      allowed: false,
+      error: 'Admin password is not configured in the deployed Production environment.',
+      configuration: { adminPasswordConfigured: false, githubTokenConfigured: Boolean(process.env.GITHUB_TOKEN) }
+    });
   }
 
   if (req.method === 'POST') {
@@ -39,10 +53,6 @@ export default function handler(req, res) {
     const token = tokenForSecret(expected);
     res.setHeader('Set-Cookie', `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200`);
     return res.status(200).json({ allowed: true });
-  }
-
-  if (req.method === 'GET') {
-    return res.status(authenticated(req) ? 200 : 403).json({ allowed: authenticated(req) });
   }
 
   if (req.method === 'DELETE') {
