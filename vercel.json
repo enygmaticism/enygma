@@ -1,3 +1,8 @@
 {
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/pyramids/puzzle", "destination": "/api/pyramids" },
+    { "source": "/api/pyramids/submit", "destination": "/api/pyramids" },
+    { "source": "/api/admin/pyramids", "destination": "/api/pyramids?admin=1" }
+  ]
 }
