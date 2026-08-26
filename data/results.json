@@ -1,18 +1,6 @@
 {
   "results": [
     {
-      "id": "golubovic_testing-connections-1787627075523",
-      "username": "golubovic_testing",
-      "type": "connections",
-      "puzzleId": "connections-1787627075523",
-      "puzzleDate": "2026-08-25",
-      "solveTimeSeconds": 26,
-      "groupsSolved": 4,
-      "completed": true,
-      "score": 2700,
-      "createdAt": "2026-08-25T03:18:27.976Z"
-    },
-    {
       "id": "marko-connections-1787627075523",
       "username": "marko",
       "type": "connections",
@@ -47,30 +35,6 @@
       "completed": false,
       "score": 0,
       "createdAt": "2026-08-25T03:28:16.959Z"
-    },
-    {
-      "id": "golubovic_testing-pyramids-1787732325560-1787733214025",
-      "username": "golubovic_testing",
-      "type": "pyramids",
-      "puzzleId": "pyramids-1787732325560",
-      "puzzleDate": "2026-08-26",
-      "solveTimeSeconds": 879,
-      "rowsSolved": 5,
-      "completed": true,
-      "score": 750,
-      "createdAt": "2026-08-26T08:33:34.025Z"
-    },
-    {
-      "id": "golubovic_testing-pyramids-1787732325560-1787734136016",
-      "username": "golubovic_testing",
-      "type": "pyramids",
-      "puzzleId": "pyramids-1787732325560",
-      "puzzleDate": "2026-08-26",
-      "solveTimeSeconds": 137,
-      "rowsSolved": 5,
-      "completed": true,
-      "score": 750,
-      "createdAt": "2026-08-26T08:48:56.016Z"
     }
   ]
 }
