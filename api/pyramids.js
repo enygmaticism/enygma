@@ -8,11 +8,7 @@ const ATTEMPT_COOKIE = 'enygma_pyramid_attempt';
 const TYPES_FALLBACK = { connections: [], crosswords: [], pyramids: [] };
 
 function adminCookie(req) { const raw=req.headers.cookie||''; const part=raw.split(';').map(v=>v.trim()).find(v=>v.startsWith(`${ADMIN_COOKIE}=`)); return part ? decodeURIComponent(part.slice(ADMIN_COOKIE.length+1)) : ''; }
-function adminOk(req) {
-  const secret=process.env.ADMIN_PASSWORD||''; if(!secret)return false;
-  const expected=crypto.createHash('sha256').update(`enygma:${secret}`).digest('hex');
-  const a=Buffer.from(adminCookie(req)),b=Buffer.from(expected); return a.length===b.length&&crypto.timingSafeEqual(a,b);
-}
+function adminOk(req) { const secret=process.env.ADMIN_PASSWORD||''; if(!secret)return false; const expected=crypto.createHash('sha256').update(`enygma:${secret}`).digest('hex'); const a=Buffer.from(adminCookie(req)),b=Buffer.from(expected); return a.length===b.length&&crypto.timingSafeEqual(a,b); }
 function secretKey() { const secret=process.env.ADMIN_PASSWORD||''; return crypto.createHash('sha256').update(`enygma-pyramid-attempt:${secret}`).digest(); }
 function signAttempt(data) { const encoded=Buffer.from(JSON.stringify(data)).toString('base64url'); const sig=crypto.createHmac('sha256',secretKey()).update(encoded).digest('base64url'); return `${encoded}.${sig}`; }
 function readAttempt(req) { try { const raw=req.headers.cookie||''; const part=raw.split(';').map(v=>v.trim()).find(v=>v.startsWith(`${ATTEMPT_COOKIE}=`)); if(!part)return null; const token=decodeURIComponent(part.slice(ATTEMPT_COOKIE.length+1)); const [encoded,sig]=token.split('.'); if(!encoded||!sig)return null; const expected=crypto.createHmac('sha256',secretKey()).update(encoded).digest('base64url'); const a=Buffer.from(sig),b=Buffer.from(expected); if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return null; const data=JSON.parse(Buffer.from(encoded,'base64url').toString('utf8')); if(!data.exp||data.exp<Date.now())return null; return data; } catch { return null; } }
@@ -55,29 +51,53 @@ async function playerGet(req,res) {
   if(!session)return res.status(401).json({error:'You must be logged in to play a Pyramid.'});
   if(played)return res.status(200).json({puzzle:{id:String(puzzle.id),title:String(puzzle.title||puzzle.date),date:String(puzzle.date),alreadyPlayed:true},archive:archive(entries)});
   const secure=await readSecurePyramids(); const privatePuzzle=secure.data[String(puzzle.id)]; if(!privatePuzzle)return res.status(500).json({error:'Pyramid answer data is not configured.'});
-  let attempt=readAttempt(req); if(!attempt||attempt.puzzleId!==String(puzzle.id)){ attempt={puzzleId:String(puzzle.id),startedAt:Date.now(),rowIndex:0,branchKey:null,revealed:[]}; writeAttempt(res,attempt); }
-  const branch=attempt.branchKey?privatePuzzle.branches?.[attempt.branchKey]:null; const currentRow=Number(attempt.rowIndex||0); const row=currentRow===0?{index:0,clue:String(privatePuzzle.firstClue||''),length:1}:branch?.rows?.[currentRow-1]||null;
-  return res.status(200).json({puzzle:{id:String(puzzle.id),title:String(puzzle.title||puzzle.date),date:String(puzzle.date),alreadyPlayed:false,totalRows:Number(privatePuzzle.rowCount||puzzle.rowCount||1),currentRow,branchChosen:Boolean(attempt.branchKey),row:row?{index:currentRow,clue:String(row.clue||''),length:Number(row.length||currentRow+1)}:null,revealedRows:(attempt.revealed||[]).map((answer,index)=>({index,answer})),branchRows:publicBranchRows(branch?.rows)},archive:archive(entries)});
+  let attempt=readAttempt(req); if(!attempt||attempt.puzzleId!==String(puzzle.id)){ attempt={puzzleId:String(puzzle.id),startedAt:Date.now(),branchKey:null,revealed:[],guesses:{},failedRows:[]}; writeAttempt(res,attempt); }
+  const branch=attempt.branchKey?privatePuzzle.branches?.[attempt.branchKey]:null;
+  return res.status(200).json({puzzle:{id:String(puzzle.id),title:String(puzzle.title||puzzle.date),date:String(puzzle.date),alreadyPlayed:false,totalRows:Number(privatePuzzle.rowCount||puzzle.rowCount||1),openingUnlocked:Boolean(attempt.branchKey),row:attempt.branchKey?null:{index:0,clue:String(privatePuzzle.firstClue||''),length:1},revealedRows:(attempt.revealed||[]).map((answer,index)=>({index,answer})),branchRows:branch?publicBranchRows(branch.rows):[],guesses:attempt.guesses||{},failedRows:attempt.failedRows||[]},archive:archive(entries)});
 }
 
 async function playerPost(req,res) {
-  noStore(res); const session=getSessionUser(req); if(!session)return res.status(401).json({error:'You must be logged in to play a Pyramid.'}); const puzzleId=String(req.body?.puzzleId||''); const answer=normalizeLetters(req.body?.answer||''); if(!puzzleId||!answer)return res.status(400).json({error:'Answer is required.'});
+  noStore(res); const session=getSessionUser(req); if(!session)return res.status(401).json({error:'You must be logged in to play a Pyramid.'}); const puzzleId=String(req.body?.puzzleId||''); const answer=normalizeLetters(req.body?.answer||''); const rowIndex=Math.max(0,Number(req.body?.rowIndex)); if(!puzzleId||!answer)return res.status(400).json({error:'Answer is required.'});
   const resultsFile=await readJsonFile('data/results.json',{results:[]}); const results=Array.isArray(resultsFile.data.results)?resultsFile.data.results:[]; if(results.some(r=>r.username===session.username&&r.type==='pyramids'&&r.puzzleId===puzzleId))return res.status(409).json({error:'This is not your first time playing this puzzle, so it will not influence the ranking.'});
   const current=await readEntries(); const puzzle=(current.data.pyramids||[]).find(e=>String(e.id)===puzzleId); if(!puzzle)return res.status(404).json({error:'Pyramid not found.'}); const secure=await readSecurePyramids(); const privatePuzzle=secure.data[puzzleId]; if(!privatePuzzle)return res.status(500).json({error:'Pyramid answer data is not configured.'});
-  let attempt=readAttempt(req); if(!attempt||attempt.puzzleId!==puzzleId)attempt={puzzleId,startedAt:Date.now(),rowIndex:0,branchKey:null,revealed:[]};
-  const currentIndex=Number(attempt.rowIndex||0); let expected,branchKey=attempt.branchKey;
-  if(currentIndex===0){ if(!privatePuzzle.firstAnswers.includes(answer))return res.status(200).json({incorrect:true}); branchKey=answer; expected=answer; }
-  else { const branch=privatePuzzle.branches?.[branchKey]; const row=branch?.rows?.[currentIndex-1]; if(!row)return res.status(500).json({error:'Pyramid branch data is incomplete.'}); expected=normalizeLetters(row.answer); if(answer!==expected)return res.status(200).json({incorrect:true}); }
-  const revealed=[...(attempt.revealed||[]),expected]; const totalRows=Number(privatePuzzle.rowCount||puzzle.rowCount||1); const nextIndex=currentIndex+1;
-  if(nextIndex>=totalRows){ const solveTimeSeconds=Math.max(0,Math.round((Date.now()-Number(attempt.startedAt||Date.now()))/1000)); const score=totalRows*150; const record={id:`${session.username}-${puzzleId}-${Date.now()}`,username:session.username,type:'pyramids',puzzleId,puzzleDate:puzzle.date,solveTimeSeconds,rowsSolved:totalRows,completed:true,score,createdAt:new Date().toISOString()}; await updateJsonFile('data/results.json',{results:[]},data=>({results:[...(data.results||[]),record]}),`Record result: ${session.username} / pyramids / ${puzzleId}`); clearAttempt(res); return res.status(200).json({completed:true,revealedAnswers:revealed,score,solveTimeSeconds}); }
-  const nextBranch=privatePuzzle.branches?.[branchKey]; const nextRow=nextBranch?.rows?.[nextIndex-1]; if(!nextRow)return res.status(500).json({error:'Pyramid branch data is incomplete.'}); const nextAttempt={...attempt,puzzleId,startedAt:Number(attempt.startedAt||Date.now()),rowIndex:nextIndex,branchKey,revealed}; writeAttempt(res,nextAttempt); return res.status(200).json({completed:false,currentRow:nextIndex,clue:String(nextRow.clue||''),length:Number(nextRow.length||nextIndex+1),branchRows:publicBranchRows(nextBranch.rows),revealedAnswers:revealed});
+  let attempt=readAttempt(req); if(!attempt||attempt.puzzleId!==puzzleId)attempt={puzzleId,startedAt:Date.now(),branchKey:null,revealed:[],guesses:{},failedRows:[]};
+  const totalRows=Number(privatePuzzle.rowCount||puzzle.rowCount||1);
+  if(rowIndex<0||rowIndex>=totalRows)return res.status(400).json({error:'Invalid row.'});
+  if(!attempt.branchKey&&rowIndex!==0)return res.status(400).json({error:'Unlock the Pyramid first.'});
+  if((attempt.failedRows||[]).includes(rowIndex))return res.status(409).json({error:'You have used all three tries for this row.'});
+  const guesses={...(attempt.guesses||{})}; const count=Number(guesses[rowIndex]||0);
+  if(count>=3)return res.status(409).json({error:'You have used all three tries for this row.'});
+
+  let expected,branchKey=attempt.branchKey;
+  if(rowIndex===0){
+    if(privatePuzzle.firstAnswers.length===0)return res.status(500).json({error:'Opening answer data is missing.'});
+    if(!privatePuzzle.firstAnswers.includes(answer)){
+      guesses[0]=count+1; const failedRows=[...(attempt.failedRows||[])]; if(guesses[0]>=3)failedRows.push(0);
+      writeAttempt(res,{...attempt,guesses,failedRows});
+      return res.status(200).json({incorrect:true,rowIndex:0,triesLeft:Math.max(0,3-guesses[0]),failed:guesses[0]>=3});
+    }
+    branchKey=answer; expected=answer;
+  } else {
+    const branch=privatePuzzle.branches?.[branchKey]; const row=branch?.rows?.[rowIndex-1]; if(!row)return res.status(500).json({error:'Pyramid row data is incomplete.'});
+    expected=normalizeLetters(row.answer);
+    if(answer!==expected){
+      guesses[rowIndex]=count+1; const failedRows=[...(attempt.failedRows||[])]; if(guesses[rowIndex]>=3)failedRows.push(rowIndex);
+      writeAttempt(res,{...attempt,guesses,failedRows});
+      return res.status(200).json({incorrect:true,rowIndex,triesLeft:Math.max(0,3-guesses[rowIndex]),failed:guesses[rowIndex]>=3});
+    }
+  }
+
+  const revealed=[...(attempt.revealed||[])]; revealed[rowIndex]=expected; guesses[rowIndex]=count+1;
+  const complete=revealed.slice(0,totalRows).every(Boolean);
+  if(complete){
+    const solveTimeSeconds=Math.max(0,Math.round((Date.now()-Number(attempt.startedAt||Date.now()))/1000)); const score=totalRows*150;
+    const record={id:`${session.username}-${puzzleId}-${Date.now()}`,username:session.username,type:'pyramids',puzzleId,puzzleDate:puzzle.date,solveTimeSeconds,rowsSolved:totalRows,completed:true,score,createdAt:new Date().toISOString()};
+    await updateJsonFile('data/results.json',{results:[]},data=>({results:[...(data.results||[]),record]}),`Record result: ${session.username} / pyramids / ${puzzleId}`);
+    clearAttempt(res); return res.status(200).json({completed:true,revealedAnswers:revealed,score,solveTimeSeconds});
+  }
+
+  const branch=privatePuzzle.branches?.[branchKey]; const nextAttempt={...attempt,puzzleId,startedAt:Number(attempt.startedAt||Date.now()),branchKey,revealed,guesses,failedRows:attempt.failedRows||[]}; writeAttempt(res,nextAttempt);
+  return res.status(200).json({completed:false,openingUnlocked:true,branchRows:publicBranchRows(branch?.rows||[]),revealedAnswers:revealed,guesses,failedRows:attempt.failedRows||[],rowIndex});
 }
 
-export default async function handler(req,res){
-  try {
-    if(req.query?.admin==='1'||req.body?.admin===true)return await adminHandler(req,res);
-    if(req.method==='GET')return await playerGet(req,res);
-    if(req.method==='POST')return await playerPost(req,res);
-    res.setHeader('Allow','GET, POST'); return res.status(405).json({error:'Method not allowed'});
-  } catch(error){ console.error(error); return res.status(500).json({error:'Could not process Pyramid.'}); }
-}
+export default async function handler(req,res){ try { if(req.query?.admin==='1'||req.body?.admin===true)return await adminHandler(req,res); if(req.method==='GET')return await playerGet(req,res); if(req.method==='POST')return await playerPost(req,res); res.setHeader('Allow','GET, POST'); return res.status(405).json({error:'Method not allowed'}); } catch(error){ console.error(error); return res.status(500).json({error:'Could not process Pyramid.'}); } }
