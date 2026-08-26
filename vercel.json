@@ -3,6 +3,9 @@
   "rewrites": [
     { "source": "/api/pyramids/puzzle", "destination": "/api/pyramids" },
     { "source": "/api/pyramids/submit", "destination": "/api/pyramids" },
-    { "source": "/api/admin/pyramids", "destination": "/api/pyramids?admin=1" }
+    { "source": "/api/admin/pyramids", "destination": "/api/pyramids?admin=1" },
+    { "source": "/api/auth/logout", "destination": "/api/auth/login?action=logout" },
+    { "source": "/api/auth/me", "destination": "/api/auth/login?action=me" },
+    { "source": "/api/auth/register", "destination": "/api/auth/login?action=register" }
   ]
 }
