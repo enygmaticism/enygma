@@ -71,6 +71,18 @@
       "completed": true,
       "score": 3000,
       "createdAt": "2026-08-27T08:34:15.514Z"
+    },
+    {
+      "id": "golubovic_testing-crosswords-1787820447231-1787821897324",
+      "username": "golubovic_testing",
+      "type": "crosswords",
+      "puzzleId": "crosswords-1787820447231",
+      "puzzleDate": "2026-08-27",
+      "solveTimeSeconds": 1365,
+      "rowsSolved": 1,
+      "completed": true,
+      "score": 500,
+      "createdAt": "2026-08-27T09:11:37.324Z"
     }
   ]
 }
