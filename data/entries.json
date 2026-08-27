@@ -97,16 +97,7 @@
       ]
     }
   ],
-  "crosswords": [
-    {
-      "id": "crosswords-1787749045465",
-      "title": "dfaa",
-      "date": "2026-08-26",
-      "content": "",
-      "rows": 3,
-      "cols": 3
-    }
-  ],
+  "crosswords": [],
   "pyramids": [
     {
       "id": "pyramids-1787732325560",
