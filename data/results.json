@@ -83,6 +83,18 @@
       "completed": true,
       "score": 500,
       "createdAt": "2026-08-27T09:11:37.324Z"
+    },
+    {
+      "id": "beelzebub-crosswords-1787820447231-1787849474013",
+      "username": "beelzebub",
+      "type": "crosswords",
+      "puzzleId": "crosswords-1787820447231",
+      "puzzleDate": "2026-08-27",
+      "solveTimeSeconds": 1028,
+      "rowsSolved": 1,
+      "completed": true,
+      "score": 500,
+      "createdAt": "2026-08-27T16:51:14.013Z"
     }
   ]
 }
