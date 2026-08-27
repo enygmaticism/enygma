@@ -97,7 +97,16 @@
       ]
     }
   ],
-  "crosswords": [],
+  "crosswords": [
+    {
+      "id": "crosswords-1787820447231",
+      "title": "NASUMIČNOSTI #1",
+      "date": "2026-08-27",
+      "content": "",
+      "rows": 5,
+      "cols": 5
+    }
+  ],
   "pyramids": [
     {
       "id": "pyramids-1787732325560",
